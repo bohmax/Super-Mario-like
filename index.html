@@ -5,17 +5,22 @@
 <title> SuperCisternì </title>
 <script type="text/javascript" src="phaser.min.js"></script> 
     <script type="text/javascript" src="menu.js"></script>
-    <style type="text/css">
-        @import url("assets/Mario-Kart-DS.ttf");
-        .hiddenText { 
-            font-family: fontmario; 
-            visibility: hidden; 
-            height: 0;
-        }
-    </style>
+    <style media='screen' type='text/css'>
+	  @font-face {
+        font-family: fontmario;
+        src: url("assets/Mario.ttf");
+        font-weight:400;
+         font-weight:normal;
+      }
+     .fontLoader {
+         position: absolute;
+         left: -1000px;
+         visibility: hidden;
+      }
+	</style>
 </head>
 <body>
-<p> Super Cisternì </p> <p class="hiddenText"> . </p>
+    <div class='fontLoader' style='font-family: fontmario;'>-</div>
     <div id="gameDiv"> </div>
 </body> 
 </html>
