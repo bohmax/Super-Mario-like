@@ -93,11 +93,12 @@ class Mario{
         console.log(pos);
         if(pos <= 112 && !this.isjumping){
             if(this.firstjump){
-                console.log('wtf')
-                this.mario.body.velocity.y -= 450;
-                if(this.mario.frame>4 && this.mario.frame < 11){this.mario.animations.play('jumpleft');}
-                else {this.mario.animations.play('jumpright');}
-                this.firstjump = false;
+                    if(this.mario.body.blocked.down){
+                    this.mario.body.velocity.y -= 450;
+                    if(this.mario.frame>4 && this.mario.frame < 11){this.mario.animations.play('jumpleft');}
+                    else {this.mario.animations.play('jumpright');}
+                    this.firstjump = false;
+                }
             } 
             else {
                 this.mario.body.velocity.y -= 20;
