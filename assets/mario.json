@@ -26,11 +26,11 @@
 },
 {
 	"filename": "Mario3.gif",
-	"frame": {"x":82,"y":0,"w":28,"h":30},
+	"frame": {"x":82,"y":0,"w":28,"h":32},
 	"rotated": false,
 	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":28,"h":30},
-	"sourceSize": {"w":28,"h":30}
+	"spriteSourceSize": {"x":0,"y":0,"w":28,"h":32},
+	"sourceSize": {"w":28,"h":32}
 },
 {
 	"filename": "Mario4.gif",
