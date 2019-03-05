@@ -12,12 +12,13 @@ class Mario{
             x = game.width/2-100; 
             y = game.height/2;
         }
-        this.mario = game.add.sprite(x, y, 'player', 'Mario.gif');
+        this.mario = game.add.sprite(x, y, 'animazione', '1');
         // Set the anchor point to the top right
         this.mario.anchor.setTo(1, 1);
         
-        this.Ystart = this.mario.position.y-32;
+        //servono per evitare salti ripetuti o movimenti insoliti
         this.firstjump = true;
+        this.hastouchedup = false;
     }
     
     setPosition(width, height){
@@ -57,7 +58,7 @@ class Mario{
             if(this.mario.body.velocity.x > 0){
                 this.mario.body.velocity.x -= 5;
             }
-            else if(this.mario.body.velocity.x != -200){
+            else if(this.mario.body.velocity.x != -200 && !this.hastouchedup){
                 this.mario.body.velocity.x -= 5;
             }
         } 
@@ -73,11 +74,11 @@ class Mario{
     
     moveright(){
         if(this.mario.body.velocity.x < 0){
-            if((this.mario.x-this.mario.width) > game.camera.x){
+            if((this.mario.x-this.mario.width) > !game.camera.x){
                 this.mario.body.velocity.x += 5;
             } else {this.mario.body.velocity.x = 0;}
         } 
-        else if(this.mario.body.velocity.x != 200){
+        else if(this.mario.body.velocity.x != 200 && !this.hastouchedup){
             this.mario.body.velocity.x += 5;
         }
         if(this.mario.body.blocked.down){
@@ -90,18 +91,21 @@ class Mario{
     jump(){
         // Move the player upward (jump)
         var pos = this.Ystart - this.mario.body.position.y;
-        console.log(pos);
-        if(pos <= 112 && !this.isjumping){
+        if(!this.isjumping){
             if(this.firstjump){
-                    if(this.mario.body.blocked.down){
+                if(this.mario.body.blocked.down){
+                    this.Ystart = this.mario.body.position.y;
                     this.mario.body.velocity.y -= 450;
                     if(this.mario.frame>4 && this.mario.frame < 11){this.mario.animations.play('jumpleft');}
                     else {this.mario.animations.play('jumpright');}
                     this.firstjump = false;
+                    this.hastouchedup = false;
                 }
             } 
-            else {
-                this.mario.body.velocity.y -= 20;
+            else if(pos <= 112){
+                if(!this.mario.body.blocked.up){
+                    this.mario.body.velocity.y -= 20;
+                } else{this.isjumping = true;}
             }
         }
         else{
@@ -114,10 +118,17 @@ class Mario{
     stop(){
         if(this.mario.body.velocity.x > 0){
             this.mario.body.velocity.x -= 5;
+            if(this.mario.body.blocked.down && this.mario.animations.name.includes('jump')){
+               this.mario.animations.play('walkright');
+            }
         } else if(this.mario.body.velocity.x < 0){
             if((this.mario.x-this.mario.width) < game.camera.x){
                 this.mario.body.velocity.x = 0;
-            } else {this.mario.body.velocity.x += 5;}
+            } 
+            else {this.mario.body.velocity.x += 5;}
+            if(this.mario.body.blocked.down && this.mario.animations.name.includes('jump')){
+               this.mario.animations.play('walkleft');
+            }
         }
         if(this.mario.body.blocked.down && this.mario.body.velocity.x == 0){
             this.mario.animations.stop(); // Stop animations

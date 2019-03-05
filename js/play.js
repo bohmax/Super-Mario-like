@@ -22,16 +22,22 @@ var playState = {
         //in modo da evitare salti multipli consecutivi
         this.supermario.isjumping = true;
         this.release = false;
+        
+        this.i = 0;
+        this.j = 0;
     },
     
     update: function() {
         game.physics.arcade.collide(this.supermario.mario, this.map.layer); 
         this.movePlayer();
         this.movecamera();
-
+        this.updatebox();
+        
         if(!this.mario.inWorld){
             this.playerDie();
         }
+        
+
     },
     
     movePlayer: function() {
@@ -55,21 +61,19 @@ var playState = {
         // If the up arrow key is pressed and the player is on the ground
         if (this.cursor.up.isDown) {
             if(!this.release){
-                if(this.mario.body.blocked.down || this.mario.animations.name.includes('walk')){
+                if(this.mario.body.blocked.down){
                     this.supermario.isjumping = false;
-                    //this.mario.body.gravity.y = 0;
                 }
                 this.release = this.supermario.jump(this.release);
             }
         }
         else if(!this.cursor.up.isDown){
-            if(this.mario.body.blocked.down || this.mario.animations.name.includes('walk')){
+            if(this.mario.body.blocked.down){
                 this.supermario.isjumping = false;
                 this.release = false;
                 this.supermario.firstjump = true;
             } else {
                 this.release = true;
-                //this.mario.body.gravity.y = 981;
             }
         }
     },
@@ -85,4 +89,12 @@ var playState = {
         // When the player dies, we go to the menu 
         game.state.start('loadplay');
     },
+    
+    updatebox: function() {
+        this.i = (this.i+1)%16;
+        if(this.i==0){
+            this.j = (this.j%3)+1;
+            this.map.map.replace(this.j,(this.j%3)+1);
+        }
+    }
 };

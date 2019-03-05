@@ -4,8 +4,8 @@ class Label{
     }
     
     draw(){
-        this.coin = game.add.sprite(170, 25, 'coin');
-        this.coin.animations.add('flip', [0, 1, 2, 3], 8, true);
+        this.coin = game.add.sprite(170, 25, 'animazione','14');
+        this.coin.animations.add('flip', [13, 14, 15, 16], 8, true);
         
         this.scoreLabel = game.add.text(50, 30, 'mario\n' + '000000', game.global.style);
         this.coinLabel = game.add.text(200, 30, 'x' + '00', game.global.style);
@@ -21,7 +21,8 @@ class Label{
         this.scoreLabel.lineSpacing = -10;
         this.worldLabel.lineSpacing = -10;
         
-        this.coin.fixedtoCamer = true;this.coin.animations.play('flip');
+        this.coin.fixedtoCamer = true;
+        this.coin.animations.play('flip');
     }
     
     followcamera(){
