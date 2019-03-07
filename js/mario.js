@@ -65,7 +65,7 @@ class Mario{
         else { 
             this.mario.body.velocity.x = 0;
         }
-        if(this.mario.body.blocked.down){
+        if(this.touching()){
             if(this.mario.body.velocity.x > 80){
                 this.mario.animations.play('turnleft');
             } else {this.mario.animations.play('walkleft');}
@@ -81,7 +81,7 @@ class Mario{
         else if(this.mario.body.velocity.x != 200 && !this.hastouchedup){
             this.mario.body.velocity.x += 5;
         }
-        if(this.mario.body.blocked.down){
+        if(this.touching()){
             if(this.mario.body.velocity.x < -80){
                 this.mario.animations.play('turnright');
             } else{this.mario.animations.play('walkright');}
@@ -91,9 +91,9 @@ class Mario{
     jump(){
         // Move the player upward (jump)
         var pos = this.Ystart - this.mario.body.position.y;
-        if(!this.isjumping){
+        if(!this.mario.isjumping){
             if(this.firstjump){
-                if(this.mario.body.blocked.down){
+                if(this.touching()){
                     this.Ystart = this.mario.body.position.y;
                     this.mario.body.velocity.y -= 450;
                     if(this.mario.frame>4 && this.mario.frame < 11){this.mario.animations.play('jumpleft');}
@@ -103,13 +103,16 @@ class Mario{
                 }
             } 
             else if(pos <= 112){
-                if(!this.mario.body.blocked.up){
+                if(!this.mario.body.touching.up){
                     this.mario.body.velocity.y -= 20;
-                } else{this.isjumping = true;}
+                } else{
+                    this.mario.body.velocity.y = 0;
+                    this.mario.isjumping = true;
+                }
             }
         }
         else{
-            this.isjumping = true;
+            this.mario.isjumping = true;
             return true;
         }
         return false;
@@ -118,7 +121,7 @@ class Mario{
     stop(){
         if(this.mario.body.velocity.x > 0){
             this.mario.body.velocity.x -= 5;
-            if(this.mario.body.blocked.down && this.mario.animations.name.includes('jump')){
+            if(this.touching() && this.mario.animations.name.includes('jump')){
                this.mario.animations.play('walkright');
             }
         } else if(this.mario.body.velocity.x < 0){
@@ -126,15 +129,19 @@ class Mario{
                 this.mario.body.velocity.x = 0;
             } 
             else {this.mario.body.velocity.x += 5;}
-            if(this.mario.body.blocked.down && this.mario.animations.name.includes('jump')){
+            if(this.touching() && this.mario.animations.name.includes('jump')){
                this.mario.animations.play('walkleft');
             }
         }
-        if(this.mario.body.blocked.down && this.mario.body.velocity.x == 0){
+        if(this.touching() && this.mario.body.velocity.x == 0){
             this.mario.animations.stop(); // Stop animations
             // Change frame (stand still)
             if(this.mario.frame>5){this.mario.frame = 6;}
             else {this.mario.frame = 0;}
         }
+    }
+    
+    touching(){
+        return this.mario.body.onFloor() || this.mario.body.touching.down;
     }
 }

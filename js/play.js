@@ -23,15 +23,33 @@ var playState = {
         this.supermario.isjumping = true;
         this.release = false;
         
-        this.i = 0;
-        this.j = 0;
+        //gruppo dei blocchi col punto interrogativo
+        this.specialblock = game.add.group();
+        //gruppo dei blocchi su cui era presente il punto interrogativo
+        this.discoveredblock = game.add.group();
+        
+        this.specialblock.enableBody = true;
+        this.discoveredblock.enableBody = true;
+        
+        this.map.map.createFromObjects('Special', 1, 'animazione', 0, true, false, this.specialblock);
+        
+        this.specialblock.callAll('animations.add', 'animations', 'bling', [17, 18, 19, 18], 10, true);
+        this.specialblock.callAll('animations.play', 'animations', 'bling');
+        this.specialblock.setAll('body.immovable', true);
+        //this.specialblock.setAll('body.moves', false);
+        //this.specialblock.setAll('body.collideWorldBounds', true);
+        //this.specialblock.setAll('checkCollision.up', false);
+        //this.specialblock.setAll('checkCollision.left', false);
+        //this.specialblock.setAll('checkCollision.right', false);
     },
     
     update: function() {
-        game.physics.arcade.collide(this.supermario.mario, this.map.layer); 
+        //game.physics.arcade.collide(this.mario, this.specialblock);
+        game.physics.arcade.collide(this.mario, this.specialblock, this.onSpecialCollide,null,this);
+        game.physics.arcade.collide(this.mario, this.discoveredblock);
+        game.physics.arcade.collide(this.mario, this.map.layer);
         this.movePlayer();
         this.movecamera();
-        this.updatebox();
         
         if(!this.mario.inWorld){
             this.playerDie();
@@ -62,14 +80,14 @@ var playState = {
         if (this.cursor.up.isDown) {
             if(!this.release){
                 if(this.mario.body.blocked.down){
-                    this.supermario.isjumping = false;
+                    this.mario.isjumping = false;
                 }
                 this.release = this.supermario.jump(this.release);
             }
         }
         else if(!this.cursor.up.isDown){
-            if(this.mario.body.blocked.down){
-                this.supermario.isjumping = false;
+            if(this.supermario.touching()){
+                this.mario.isjumping = false;
                 this.release = false;
                 this.supermario.firstjump = true;
             } else {
@@ -95,6 +113,20 @@ var playState = {
         if(this.i==0){
             this.j = (this.j%3)+1;
             this.map.map.replace(this.j,(this.j%3)+1);
+        }
+    },
+    
+    onSpecialCollide: function(mario, specialblockitem) {
+        if(mario.body.touching.up){
+            specialblockitem.animations.stop();
+            specialblockitem.frame = 20;
+            specialblockitem.parent.remove(specialblockitem,false,false);
+            this.discoveredblock.add(specialblockitem);
+            specialblockitem.body.immovable = true;
+
+            game.add.tween(specialblockitem).to({y: specialblockitem.position.y-16}, 125, Phaser.Easing.Linear.none).to({y: specialblockitem.position.y+4}, 125,Phaser.Easing.Linear.none).to({y: specialblockitem.position.y}, 75,Phaser.Easing.Linear.none).start();  
+            //bounce.onComplete.add(startBounceTween, this);
+        
         }
     }
 };
