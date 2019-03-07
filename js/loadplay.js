@@ -2,23 +2,32 @@ var loadplayState = {
     
     create: function() {
         
-        game.global.score = 0;
-        
         game.stage.backgroundColor = '#000000';
         this.labels = new Label();
         this.labels.draw();
         
         var style = { font: '30px fontmario', fill: '#ffffff', align: "center" }
         
-        var xLabel = game.add.text(game.width/2, game.height/2, 'x', style);
-        var liveLabel = game.add.text(game.width/2+100, game.height/2, '3', style);
-        var worldLabel = game.add.text(game.width/2, game.height/2-100, 'world ' + '1-1', style);
-        
-        worldLabel.anchor.setTo(0.5, 0.5);
-        xLabel.anchor.setTo(1, 1);
-        liveLabel.anchor.setTo(1, 1);
-        
-        var mario = new Mario(null);
+        var xLabel = null;
+        var liveLabel = null;
+        if(game.global.life > 0){
+            var mario = new Mario(null);
+            xLabel = game.add.text(game.width/2, game.height/2, 'x', style);
+            liveLabel = game.add.text(game.width/2+100, game.height/2, game.global.life, style);
+            xLabel.anchor.setTo(1, 1);
+            liveLabel.anchor.setTo(1, 1);
+            var worldLabel = game.add.text(game.width/2, game.height/2-100, 'world ' + '1-1', style);
+            worldLabel.anchor.setTo(0.5, 0.5);
+        } else {
+            var testo = null;
+            if(game.global.life == 0){
+                testo = 'game over';
+            } else{
+                testo = 'time up';
+            }
+            liveLabel = game.add.text(game.width/2, game.height/2, testo, style);
+            liveLabel.anchor.setTo(0.5, 0.5);
+        }
         
         this.i = 0;
     },
@@ -33,6 +42,12 @@ var loadplayState = {
     
     start: function() {
         // Start the actual game 
-        game.state.start('play');
+        if(game.global.life > 0){
+            game.global.score = 0;
+            game.global.collectedcoin = 0;
+            game.state.start('play');
+        } else{
+            game.state.start('menu');
+        }
     }
 };

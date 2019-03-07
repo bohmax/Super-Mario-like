@@ -4,6 +4,8 @@ var game = new Phaser.Game(500, 470, Phaser.AUTO, 'gameDiv');
 // Define our global variable
 game.global = {
     score: 0,
+    collectedcoin: 0,
+    life: 3,
     style: null,
 };
 

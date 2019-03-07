@@ -5,6 +5,8 @@ var menuState = {
         // This function is called after the 'preload' function 
         // Here we set up the game, display sprites, etc.
         
+        game.stage.backgroundColor = '#3498db';
+        
         this.labels = new Label();
         this.labels.draw();
         
@@ -26,6 +28,10 @@ var menuState = {
         
         //this.cursor = game.input.keyboard.addKeyCapture([Phaser.Keyboard.UP, Phaser.Keyboard.DOWN,Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT]);
         this.cursor = game.input.keyboard.createCursorKeys();
+        
+        game.global.life = 3;
+        game.global.score = 0;
+        game.global.collectedcoin = 0;
     },
         
     update: function () {

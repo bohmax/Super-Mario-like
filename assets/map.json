@@ -21,6 +21,14 @@
                  "height":32,
                  "id":15,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":1
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -33,6 +41,14 @@
                  "height":32,
                  "id":16,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":0
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -45,6 +61,14 @@
                  "height":32,
                  "id":17,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":1
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -57,6 +81,14 @@
                  "height":32,
                  "id":18,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":1
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -69,6 +101,14 @@
                  "height":32,
                  "id":19,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":0
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -81,6 +121,14 @@
                  "height":32,
                  "id":20,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":1
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -93,6 +141,14 @@
                  "height":32,
                  "id":21,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":1
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -105,6 +161,14 @@
                  "height":32,
                  "id":22,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":1
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -117,6 +181,14 @@
                  "height":32,
                  "id":23,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":0
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -129,6 +201,14 @@
                  "height":32,
                  "id":24,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":1
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -141,6 +221,14 @@
                  "height":32,
                  "id":25,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":1
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -153,6 +241,14 @@
                  "height":32,
                  "id":26,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":1
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -165,6 +261,14 @@
                  "height":32,
                  "id":27,
                  "name":"",
+                 "properties":
+                    {
+                     "coin":1
+                    },
+                 "propertytypes":
+                    {
+                     "coin":"int"
+                    },
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -179,7 +283,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":28,
+ "nextobjectid":29,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tileheight":32,

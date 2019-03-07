@@ -36,11 +36,15 @@ var playState = {
         this.specialblock.callAll('animations.add', 'animations', 'bling', [17, 18, 19, 18], 10, true);
         this.specialblock.callAll('animations.play', 'animations', 'bling');
         this.specialblock.setAll('body.immovable', true);
-        //this.specialblock.setAll('body.moves', false);
-        //this.specialblock.setAll('body.collideWorldBounds', true);
-        //this.specialblock.setAll('checkCollision.up', false);
-        //this.specialblock.setAll('checkCollision.left', false);
-        //this.specialblock.setAll('checkCollision.right', false);
+        
+        // Create a custom timer
+					this.countDown = game.time.create(false);
+          
+          // Set our initial event
+          this.countDown.add(Phaser.Timer.SECOND * 400, this.timeout, this);
+          
+          // Start the timer
+          this.countDown.start();
     },
     
     update: function() {
@@ -50,6 +54,8 @@ var playState = {
         game.physics.arcade.collide(this.mario, this.map.layer);
         this.movePlayer();
         this.movecamera();
+        
+        this.labels.settime(this.countDown);
         
         if(!this.mario.inWorld){
             this.playerDie();
@@ -86,7 +92,7 @@ var playState = {
             }
         }
         else if(!this.cursor.up.isDown){
-            if(this.supermario.touching()){
+            if(this.supermario.touchingdown()){
                 this.mario.isjumping = false;
                 this.release = false;
                 this.supermario.firstjump = true;
@@ -104,7 +110,12 @@ var playState = {
     },
     
     playerDie: function() {
-        // When the player dies, we go to the menu 
+        // When the player dies, we go to the menu
+        if(this.countDown.duration!=0){
+            game.global.life--;
+        } else{
+            game.global.life=-1; 
+        }
         game.state.start('loadplay');
     },
     
@@ -118,15 +129,44 @@ var playState = {
     
     onSpecialCollide: function(mario, specialblockitem) {
         if(mario.body.touching.up){
-            specialblockitem.animations.stop();
-            specialblockitem.frame = 20;
-            specialblockitem.parent.remove(specialblockitem,false,false);
-            this.discoveredblock.add(specialblockitem);
-            specialblockitem.body.immovable = true;
-
-            game.add.tween(specialblockitem).to({y: specialblockitem.position.y-16}, 125, Phaser.Easing.Linear.none).to({y: specialblockitem.position.y+4}, 125,Phaser.Easing.Linear.none).to({y: specialblockitem.position.y}, 75,Phaser.Easing.Linear.none).start();  
-            //bounce.onComplete.add(startBounceTween, this);
+            game.add.tween(specialblockitem).to({y: specialblockitem.position.y-16}, 250, Phaser.Easing.Linear.none).to({y: specialblockitem.position.y+4}, 125,Phaser.Easing.Linear.none).to({y: specialblockitem.position.y}, 75,Phaser.Easing.Linear.none).start();
+            if(specialblockitem.coin>0){
+                game.global.score +=200;
+                this.labels.updatescore(game.global.score);
+                game.global.collectedcoin++;
+                this.labels.updatecollected(game.global.collectedcoin);
+                var coin1 = game.add.sprite(specialblockitem.position.x, specialblockitem.position.y-16, 'animazione','14');
+                coin1.animations.add('flip', [13, 14, 15, 16], 8, true);
+                var tween = game.add.tween(coin1).to({y: coin1.position.y-(32*3)}, 125, Phaser.Easing.Linear.none).to({y:   coin1.position.y-16}, 125,Phaser.Easing.Linear.none);
+                tween.onComplete.add(this.callback, this);
+                tween.start();
+                specialblockitem.coin--;
+                if(specialblockitem.coin==0){
+                    specialblockitem.animations.stop();
+                    specialblockitem.frame = 20;
         
+                    specialblockitem.parent.remove(specialblockitem,false,false);
+                    this.discoveredblock.add(specialblockitem);
+                    specialblockitem.body.immovable = true;
+                }
+            }
         }
+    },
+    
+    callback: function(currentTarget, currentTween){
+        var text = game.add.text(currentTarget.position.x, currentTarget.position.y, '200', game.global.style);
+        //text.fixedToCamera = true;
+        //text.cameraOffset.x = currentTarget.position.x;
+        //text.anchor.setTo(1, 1);
+        var ypos = currentTarget.position.y-(32*2);
+        var tween1 = game.add.tween(text).to({y: ypos}, 500, Phaser.Easing.Linear.none,false);
+        tween1.onComplete.add(function distruggi() { text.destroy(); });
+        tween1.start();
+        currentTarget.destroy();
+    },
+    
+    timeout: function(){
+        this.playerDie();
     }
+    
 };

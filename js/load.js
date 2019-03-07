@@ -7,7 +7,7 @@ var loadState = {
         game.load.image('logo', 'assets/logo.png');
         game.load.image('tileset', 'assets/tileset.png');
         
-        game.global.style = { font: '20px fontmario', fill: '#ffffff', align: "center" };
+        game.global.style = { font: '15px fontmario', fill: '#ffffff', align: "center" };
     },
     
     create: function() {
@@ -15,7 +15,6 @@ var loadState = {
         // Start the load state
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.renderer.renderSession.roundPixels = true;
-        game.stage.backgroundColor = '#3498db';
         
         game.state.start('play');
     }
