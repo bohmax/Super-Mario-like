@@ -43,8 +43,6 @@ var loadplayState = {
     start: function() {
         // Start the actual game 
         if(game.global.life > 0){
-            game.global.score = 0;
-            game.global.collectedcoin = 0;
             game.state.start('play');
         } else{
             game.state.start('menu');

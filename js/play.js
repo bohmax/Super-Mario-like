@@ -1,8 +1,7 @@
 var playState = {
     
     create: function() {
-    
-        game.global.score = 0;
+
         game.stage.backgroundColor = '#3498db';
         this.labels = new Label();
         this.labels.draw();
@@ -35,16 +34,17 @@ var playState = {
         
         this.specialblock.callAll('animations.add', 'animations', 'bling', [17, 18, 19, 18], 10, true);
         this.specialblock.callAll('animations.play', 'animations', 'bling');
+        this.map.map.createFromObjects('Special', 5, 'animazione', 21, true, false, this.specialblock);
         this.specialblock.setAll('body.immovable', true);
         
         // Create a custom timer
-					this.countDown = game.time.create(false);
+        this.countDown = game.time.create(false);
           
-          // Set our initial event
-          this.countDown.add(Phaser.Timer.SECOND * 400, this.timeout, this);
+        // Set our initial event
+        this.countDown.add(Phaser.Timer.SECOND * 400, this.timeout, this);
           
-          // Start the timer
-          this.countDown.start();
+        // Start the timer
+        this.countDown.start();
     },
     
     update: function() {
@@ -129,15 +129,17 @@ var playState = {
     
     onSpecialCollide: function(mario, specialblockitem) {
         if(mario.body.touching.up){
-            game.add.tween(specialblockitem).to({y: specialblockitem.position.y-16}, 250, Phaser.Easing.Linear.none).to({y: specialblockitem.position.y+4}, 125,Phaser.Easing.Linear.none).to({y: specialblockitem.position.y}, 75,Phaser.Easing.Linear.none).start();
+            var twen = this.collisionTween(specialblockitem);
+            twen.start();
             if(specialblockitem.coin>0){
                 game.global.score +=200;
                 this.labels.updatescore(game.global.score);
                 game.global.collectedcoin++;
                 this.labels.updatecollected(game.global.collectedcoin);
                 var coin1 = game.add.sprite(specialblockitem.position.x, specialblockitem.position.y-16, 'animazione','14');
-                coin1.animations.add('flip', [13, 14, 15, 16], 8, true);
-                var tween = game.add.tween(coin1).to({y: coin1.position.y-(32*3)}, 125, Phaser.Easing.Linear.none).to({y:   coin1.position.y-16}, 125,Phaser.Easing.Linear.none);
+                coin1.animations.add('flip', [13, 14, 15, 16], 20, true);
+                coin1.animations.play('flip');
+                var tween = game.add.tween(coin1).to({y: coin1.position.y-(32*3)}, 250, Phaser.Easing.Linear.none).to({y:   coin1.position.y-16}, 175,Phaser.Easing.Linear.none);
                 tween.onComplete.add(this.callback, this);
                 tween.start();
                 specialblockitem.coin--;
@@ -167,6 +169,10 @@ var playState = {
     
     timeout: function(){
         this.playerDie();
+    },
+    
+    collisionTween: function(toTween){
+        return game.add.tween(toTween).to({y: toTween.position.y-16}, 250, Phaser.Easing.Linear.none).to({y: toTween.position.y+4}, 125,Phaser.Easing.Linear.none).to({y: toTween.position.y}, 75,Phaser.Easing.Linear.none);
     }
     
 };

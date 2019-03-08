@@ -12,9 +12,14 @@ var menuState = {
         
         this.map = new Map();
         
+        var bestscore = 0;
+        if(game.global.bestscore<game.global.score){
+           bestscore = this.labels.scoreLabel.text.substr(6, this.labels.scoreLabel.text.length);
+        } else {bestscore = game.global.textbestscore;}
+        
         this.sprite = game.add.sprite(game.width/2, 150, 'logo');
         var connectLabel = game.add.text(game.width/2, game.height/2+40, 'PLEASE CONNECT THE CONTROLLER', game.global.style);
-        var topscareLabel = game.add.text(game.width/2, game.height/2+90, 'top score: ' + 10, game.global.style);
+        var topscareLabel = game.add.text(game.width/2, game.height/2+90, 'top- ' + bestscore, game.global.style);
         
         topscareLabel.anchor.setTo(0.5, 0.5);
         connectLabel.anchor.setTo(0.5, 0.5);
