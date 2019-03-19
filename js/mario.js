@@ -19,6 +19,7 @@ class Mario{
         //servono per evitare salti ripetuti o movimenti insoliti
         this.firstjump = true;
         this.hastouchedup = false;
+        this.isBigger = false;
     }
     
     setPosition(width, height){

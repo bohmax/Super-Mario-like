@@ -166,20 +166,23 @@ var playState = {
                     this.labels.updatescore(200);
                     game.global.collectedcoin++;
                     this.labels.updatecollected(game.global.collectedcoin);
-                    var coin1 = this.iterategroup(this.ricicla,0);
-                    if(coin1==null){
-                        coin1 = game.add.sprite(specialblockitem.position.x, specialblockitem.position.y-16, 'animazione','14');
+                    var coin1 = this.createobject(specialblockitem,0,'14');
+                    if(!coin1.coin){
                         coin1.animations.add('flip', [0, 1, 2, 3], 20, true);
                         coin1.animations.play('flip');
                         coin1.coin = true;
-                    } else {coin1.reset(specialblockitem.position.x, specialblockitem.position.y-16);}
+                    }
                     var tween = game.add.tween(coin1).to({y: coin1.position.y-(32*3)}, 250, Phaser.Easing.Linear.none).to({y:   coin1.position.y-16}, 175,Phaser.Easing.Linear.none);
                     tween.onComplete.add(this.callbackcoin, this);
                     tween.start();
                     specialblockitem.coin--;
                 }
-                //genera il fungo
-                else{specialblockitem.coin = 0; twen.onComplete.add(this.callbackfungo, this);}
+                //genera il fungo o la stella
+                else{
+                    specialblockitem.coin = 0;
+                    if(specialblockitem.stella){twen.onComplete.add(this.callbackstella, this);}
+                    else {twen.onComplete.add(this.callbackfungo, this);}
+                }
                 if(specialblockitem.coin==0){
                     specialblockitem.animations.stop();
                     specialblockitem.frame = 7;
@@ -203,32 +206,58 @@ var playState = {
         var fungo = null;
         if(!currentTarget.vita){
             //identifica che si tratta di un fungo ed il tipo di fungo
-            fungo = this.iterategroup(this.ricicla,2);
-            if(fungo == null){
-                fungo = game.add.sprite(currentTarget.position.x, currentTarget.position.y, 'animazione', 9);
-                fungo.revive(currentTarget.position.x, currentTarget.position.y);
-            } else{fungo.reset(currentTarget.position.x, currentTarget.position.y); console.log('ahah');}
-            //fungo.vita=false;
-            fungo.isFungo = true;
+            if(!this.supermario.isBigger){
+                fungo = this.createobject(currentTarget,2,'10');
+                if(!fungo.isFungo){
+                    fungo.isFungo = true;
+                    fungo.scrivi = '1000';
+                }
+            } else{
+                fungo = this.createobject(currentTarget,3,'12');
+                if(!fungo.isPianta){
+                    fungo.isPianta = true;
+                    fungo.animations.add('spling', [11, 12, 13, 14,13,12], 8, true);
+                    fungo.animations.play('spling');
+                }
+            }
             fungo.scrivi = '1000';
         } else{
-            fungo = this.iterategroup(this.ricicla,1);
-            if(fungo == null){
-                fungo = game.add.sprite(currentTarget.position.x, currentTarget.position.y, 'animazione', 10);
-            } else{fungo.reset(currentTarget.position.x, currentTarget.position.y); console.log('ah');}
-            fungo.vita = true;
-            fungo.scrivi = '1UP';
+            fungo = this.createobject(currentTarget,1,'11');
+            if(!fungo.vita){
+                fungo.vita = true;
+                fungo.scrivi = '1UP';
+            }
         }
         
         fungo.coin = false;
         this.special.add(fungo);
         var ypos = currentTarget.position.y-32;
         var tween1 = game.add.tween(fungo).to({y: ypos}, 500, Phaser.Easing.Linear.none,false);
-        tween1.onComplete.add(function move(currentTarget, currentTween) { 
-            currentTarget.body.gravity.y = 1600;
-            currentTarget.body.velocity.x = 150;
-        });
+        if(!fungo.isPianta){
+            tween1.onComplete.add(function move(currentTarget, currentTween) { 
+                currentTarget.body.gravity.y = 1600;
+                currentTarget.body.velocity.x = 150;
+            });
+        }
         tween1.start();
+    },
+    
+    callbackstella: function(currentTarget, currentTween){
+        var stella = this.createobject(currentTarget,4,'16');
+        if(!stella.stella){
+            stella.animations.add('lampeggia', [15, 16, 17, 18,17,16], 8, true);
+            stella.animations.play('lampeggia');
+            stella.isStella=true;
+        }
+        this.special.add(stella);
+        var ypos = currentTarget.position.y-32;
+        var tween1 = game.add.tween(stella).to({y: ypos}, 500, Phaser.Easing.Linear.none,false);
+        //tween1.onComplete.add(function move(currentTarget, currentTween) { 
+        //    currentTarget.body.gravity.y = 1600;
+         //   currentTarget.body.velocity.x = 150;
+        //});
+        tween1.start();
+        
     },
     
     timeout: function(){
@@ -247,7 +276,12 @@ var playState = {
         this.ricicla.add(movingTarget);
         var xpos = mario.scale.x * (mario.width+16);
         this.pointtext(mario.position.x-xpos,mario.position.y-mario.height-32,movingTarget.scrivi);
-        if(movingTarget.isFungo){this.labels.updatescore(1000);}
+        if(!movingTarget.vita){
+            this.labels.updatescore(1000);
+            if(movingTarget.isFungo){
+                this.supermario.isBigger=true;
+            }
+        }
         else{mario.body.touching.up=false;}
     },
     
@@ -275,7 +309,21 @@ var playState = {
             if(oggettoda==0 && element.coin) { return element; }
             else if(oggettoda==1 && element.vita){return element;}
             else if(oggettoda==2 && element.isFungo){return element;}
+            else if(oggettoda==3 && element.isPianta){return element;}
+            else if(oggettoda==4 && element.isStella){return element;}
         }
         return null;
+    },
+    
+    //funzione utilizzata per creare e reciclare gli oggetti già utilizzat
+    //currenttarget è per la posizione,
+    //i l'indice da passare a iterate group
+    //j il frame da visualizzare
+    createobject(currentTarget,i,j){
+        var object = this.iterategroup(this.ricicla,i);
+        if(object == null){
+            object = game.add.sprite(currentTarget.position.x, currentTarget.position.y, 'animazione', j);
+        } else{object.reset(currentTarget.position.x, currentTarget.position.y);}
+        return object;
     }
 };
