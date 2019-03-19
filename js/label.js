@@ -4,8 +4,8 @@ class Label{
     }
     
     draw(){
-        this.coin = game.add.sprite(165, 25, 'animazione','14');
-        this.coin.animations.add('flip', [13, 14, 15, 16], 8, true);
+        this.coin = game.add.sprite(165, 25, 'animazione','0');
+        this.coin.animations.add('flip', [0, 1, 2, 3], 8, true);
         
         this.scorestringa = '000000';
         this.scorecollected = '00';
@@ -22,7 +22,7 @@ class Label{
         this.coin.anchor.setTo(0.5, 0.5);
         
         this.coin.animations.play('flip');
-        this.updatescore();
+        this.updatescore(0);
         this.updatecollected();
     }
     
@@ -34,7 +34,8 @@ class Label{
         this.coin.fixedToCamera = true;
     }
     
-    updatescore(){
+    updatescore(num){
+        game.global.score += num;
         var score = this.scorestringa+game.global.score;
         this.scoreLabel.text ='mario\n' + score.substr(score.length-this.scorestringa.length); 
     }

@@ -12,7 +12,7 @@ class Mario{
             x = game.width/2-100; 
             y = game.height/2;
         }
-        this.mario = game.add.sprite(x, y, 'animazione', '1');
+        this.mario = game.add.sprite(x, y, 'mario_animation', '1.gif');
         // Set the anchor point to the top right
         this.mario.anchor.setTo(1, 1);
         
@@ -32,14 +32,8 @@ class Mario{
     }
     
     animation(){
-        // Create the 'right' animation by looping the frames 1 and 2
-        this.mario.animations.add('walkright', [1, 2, 3], 8, true);
-        // Create the 'left' animation by looping the frames 3 and 4
-        this.mario.animations.add('walkleft', [7, 8, 9], 8, true);
-        this.mario.animations.add('jumpright', [4], 8, true);
-        this.mario.animations.add('jumpleft', [10], 8, true);
-        this.mario.animations.add('turnleft', [5], 8, true);
-        this.mario.animations.add('turnright', [11], 8, true);
+        this.mario.animations.add('walk', [1, 2, 3], 8, true);
+        this.mario.animations.add('jump', [4], 8, true);
     }
     
     position(map){
@@ -54,37 +48,49 @@ class Mario{
     }
     
     moveleft(){
-        if((this.mario.x-this.mario.width) > game.camera.x){
-            if(this.mario.body.velocity.x > 0){
-                this.mario.body.velocity.x -= 5;
-            }
-            else if(this.mario.body.velocity.x != -200 && !this.hastouchedup){
-                this.mario.body.velocity.x -= 5;
+        //per capire se sono nei limiti della camera
+        if((this.mario.x+this.mario.width) > game.camera.x){
+            if(this.mario.body.velocity.x != -200 && !this.hastouchedup){
+                this.mario.body.velocity.x -= 10;
             }
         } 
         else { 
             this.mario.body.velocity.x = 0;
         }
         if(this.touchingdown()){
+            //controllo fatto per capire se l'orientamento di marco è quello giusto
+            if(this.mario.scale.x>0){
+                this.mario.scale.setTo(-1, 1);
+                this.mario.anchor.setTo(0, 1);
+            }
             if(this.mario.body.velocity.x > 80){
-                this.mario.animations.play('turnleft');
-            } else {this.mario.animations.play('walkleft');}
+                this.mario.frame = 5;
+            } else {this.mario.animations.play('walk');}
         }
     }
     
     moveright(){
-        if(this.mario.body.velocity.x < 0){
-            if((this.mario.x-this.mario.width) > game.camera.x){
-                this.mario.body.velocity.x += 5;
-            } else {this.mario.body.velocity.x = 0;}
-        } 
-        else if(this.mario.body.velocity.x != 200 && !this.hastouchedup){
-            this.mario.body.velocity.x += 5;
+        if((this.mario.x-this.mario.width) > game.camera.x){
+            if(this.mario.body.velocity.x != 200 && !this.hastouchedup){
+                this.mario.body.velocity.x += 10;
+            }
         }
+        else {
+            if(this.mario.body.velocity.x < 0){
+                this.mario.body.velocity.x = 0;
+            }else if(this.mario.body.velocity.x != 200 && !this.hastouchedup){
+                this.mario.body.velocity.x += 10;
+            }
+        }
+        //gestisce l'animazione
         if(this.touchingdown()){
+            if(this.mario.scale.x<0){
+                this.mario.scale.setTo(1, 1);
+                this.mario.anchor.setTo(1, 1);
+            }
             if(this.mario.body.velocity.x < -80){
-                this.mario.animations.play('turnright');
-            } else{this.mario.animations.play('walkright');}
+                this.mario.frame = 5;
+            } else{this.mario.animations.play('walk');}
         }
     }
     
@@ -96,8 +102,7 @@ class Mario{
                 if(this.touchingdown()){
                     this.Ystart = this.mario.body.position.y;
                     this.mario.body.velocity.y -= 450;
-                    if(this.mario.frame>4 && this.mario.frame < 11){this.mario.animations.play('jumpleft');}
-                    else {this.mario.animations.play('jumpright');}
+                    this.mario.animations.play('jump');
                     this.firstjump = false;
                     this.hastouchedup = false;
                 }
@@ -119,25 +124,25 @@ class Mario{
     }
     
     stop(){
+        //console.log(this.mario.body.velocity.x);
         if(this.mario.body.velocity.x > 0){
-            this.mario.body.velocity.x -= 5;
+            this.mario.body.velocity.x -= 10;
             if(this.touchingdown() && this.mario.animations.name.includes('jump')){
-               this.mario.animations.play('walkright');
+               this.mario.animations.play('walk');
             }
         } else if(this.mario.body.velocity.x < 0){
             if((this.mario.x-this.mario.width) < game.camera.x){
                 this.mario.body.velocity.x = 0;
             } 
-            else {this.mario.body.velocity.x += 5;}
+            else {this.mario.body.velocity.x += 10;}
             if(this.touchingdown() && this.mario.animations.name.includes('jump')){
-               this.mario.animations.play('walkleft');
+               this.mario.animations.play('walk');
             }
         }
         if(this.touchingdown() && this.mario.body.velocity.x == 0){
             this.mario.animations.stop(); // Stop animations
             // Change frame (stand still)
-            if(this.mario.frame>5){this.mario.frame = 6;}
-            else {this.mario.frame = 0;}
+            this.mario.frame = 0;
         }
     }
     
