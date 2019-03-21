@@ -7,3 +7,5 @@ End level
 animation of special object
 mario animation iterating with special object
 add enemy
+
+Make mario run if I have time
