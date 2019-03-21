@@ -9,3 +9,4 @@ mario animation iterating with special object
 add enemy
 
 Make mario run if I have time
+Make mario collide correctly
