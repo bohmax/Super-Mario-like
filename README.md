@@ -4,8 +4,7 @@ The code is in Javascript, To play you need to open the game with your computer 
 
 To Do
 End level
-animation of special object
-mario animation iterating with special object
+mario animation interating with special object
 add enemy
 
 Make mario run if I have time
