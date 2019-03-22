@@ -1,8 +1,8 @@
 var loadState = {
     
     preload: function () {
-        game.load.atlasJSONHash('animazione', 'assets/animations.png', 'assets/animations.json');   
-        game.load.atlasJSONHash('mario_animation', 'assets/mario_animation.png', 'assets/mario_animation.json');  
+        game.load.atlas('animazione', 'assets/animations.png', 'assets/animations.json',null,Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);   
+        game.load.atlas('mario_animation', 'assets/mario_animation.png', 'assets/mario_animation.json',null,Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);  
         game.load.tilemap('map', 'assets/map.json', null, Phaser.Tilemap.TILED_JSON);
         
         game.load.image('logo', 'assets/logo.png');

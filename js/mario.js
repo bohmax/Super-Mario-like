@@ -12,7 +12,7 @@ class Mario{
             x = game.width/2-100; 
             y = game.height/2;
         }
-        this.mario = game.add.sprite(x, y, 'mario_animation', '1.gif');
+        this.mario = game.add.sprite(x, y, 'mario_animation', '1');
         // Set the anchor point to the top right
         this.mario.anchor.setTo(1, 1);
         
@@ -30,6 +30,7 @@ class Mario{
     gravity(){
         game.physics.arcade.enable(this.mario);
         this.mario.body.gravity.y = 1600;
+        //this.mario.body.setSize(this.mario.body.x, this.mario.body.y, 8, 0);
     }
     
     animation(){
@@ -66,7 +67,8 @@ class Mario{
             }
             if(this.mario.body.velocity.x > 80){
                 this.mario.frame = 5;
-            } else {this.mario.animations.play('walk');}
+                this.mario.body.setSize(26,32);
+            } else if(this.mario.body.x!=27){this.mario.animations.play('walk');this.mario.body.setSize(27,32);}
         }
     }
     
@@ -91,7 +93,8 @@ class Mario{
             }
             if(this.mario.body.velocity.x < -80){
                 this.mario.frame = 5;
-            } else{this.mario.animations.play('walk');}
+                this.mario.body.setSize(26,32);
+            } else if(this.mario.body.x!=27){this.mario.animations.play('walk');this.mario.body.setSize(27,32);}
         }
     }
     
@@ -106,6 +109,8 @@ class Mario{
                     this.mario.animations.play('jump');
                     this.firstjump = false;
                     this.hastouchedup = false;
+                    //setta la dimenensione del body
+                    this.mario.body.setSize(34,32);
                 }
             } 
             else if(pos <= 112){
@@ -140,9 +145,10 @@ class Mario{
                this.mario.animations.play('walk');
             }
         }
-        if(this.touchingdown() && this.mario.body.velocity.x == 0){
+        if(this.touchingdown() && this.mario.body.velocity.x == 0 && this.mario.frame!=0){
             this.mario.animations.stop(); // Stop animations
             // Change frame (stand still)
+            this.mario.body.setSize(26,32);
             this.mario.frame = 0;
         }
     }

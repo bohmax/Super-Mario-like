@@ -34,13 +34,17 @@ var playState = {
         this.special = game.add.group();
         //gruppo usato per reciclare gli oggetti già utilizzati
         this.ricicla = game.add.group();
+        //gruppo per inserire temporaneamente oggetti
+        this.temporaneo = game.add.group();
         
         this.specialblock.enableBody = true;
         this.discoveredblock.enableBody = true;
         this.block.enableBody = true;
         this.extraobject.enableBody = true;
         this.special.enableBody = true;
-        game.world.bringToTop(this.discoveredblock);
+        this.temporaneo.enableBody = true;
+        game.world.sendToBack(this.temporaneo);
+        game.world.bringToTop(this.special);
         
         this.map.map.createFromObjects('Special', 1, 'animazione', 0, true, false, this.specialblock);
         this.map.map.createFromObjects('block', 5, 'animazione', 8, true, false, this.block);
@@ -51,6 +55,10 @@ var playState = {
         this.map.map.createFromObjects('Special', 5, 'animazione', 8, true, false, this.specialblock);
         this.specialblock.setAll('body.immovable', true);
         this.block.setAll('body.immovable', true);
+        
+        this.arraychildren = new Array(this.specialblock.children,this.block.children,this.discoveredblock.children);
+        this.special.children.sort(this.sortfunction);
+        this.block.children.sort(this.sortfunction);
         
         // Create a custom timer
         this.countDown = game.time.create(false);
@@ -75,9 +83,9 @@ var playState = {
     update: function() {
         if(this.special.length>0){
             game.physics.arcade.collide(this.special, this.map.layer,this.enemymove,null,this);
-            game.physics.arcade.collide(this.special, this.specialblock);
+            game.physics.arcade.collide(this.special, this.specialblock,this.itemCollision,this.preventCollision,this);
+            game.physics.arcade.collide(this.special, this.block,this.itemCollision,this.preventCollision,this);
             game.physics.arcade.collide(this.special, this.discoveredblock);
-            game.physics.arcade.collide(this.special, this.block);
             game.physics.arcade.overlap(this.mario, this.special, this.onOverlap,null,this);
             game.physics.arcade.overlap(this.special, this.extraobject, function(r,s){console.log('ugg');
                                                                                     r.parent.remove(r);
@@ -97,9 +105,6 @@ var playState = {
         if(!this.mario.inWorld){
             this.playerDie();
         }
-        
-        game.debug.body(this.mario);
-        //game.debug.body(this.bottom);
         
     },
     
@@ -161,7 +166,8 @@ var playState = {
     onSpecialCollide: function(mario, specialblockitem) {
         if(mario.body.touching.up){
             var twen = this.collisionTween(specialblockitem);
-            if(specialblockitem.parent == this.specialblock){
+            twen.onComplete.add(function(r,s){r.isTweening=false;});
+            if(specialblockitem.parent == this.specialblock && !specialblockitem.isTweening){
                 if(specialblockitem.coin>0){
                     this.labels.updatescore(200);
                     game.global.collectedcoin++;
@@ -176,9 +182,15 @@ var playState = {
                     tween.onComplete.add(this.callbackcoin, this);
                     tween.start();
                     specialblockitem.coin--;
+                    twen.onComplete.add(function(r,s){
+                        r.isTweening=false;
+                        if(r.coin==0){
+                            this.discoveredblock.add(r);
+                        }
+                        r.body.immovable = true;},this);
                 }
                 //genera il fungo o la stella
-                else{
+                else if(specialblockitem.coin!=0){
                     specialblockitem.coin = 0;
                     if(specialblockitem.stella){twen.onComplete.add(this.callbackstella, this);}
                     else {twen.onComplete.add(this.callbackfungo, this);}
@@ -186,13 +198,10 @@ var playState = {
                 if(specialblockitem.coin==0){
                     specialblockitem.animations.stop();
                     specialblockitem.frame = 7;
-        
-                    specialblockitem.parent.remove(specialblockitem,false,false);
-                    this.discoveredblock.add(specialblockitem);
-                    specialblockitem.body.immovable = true;
                 }
             }   
             twen.start();
+            specialblockitem.isTweening = true;
         }
     },
     
@@ -203,6 +212,10 @@ var playState = {
     },
         
     callbackfungo: function(currentTarget, currentTween){
+        currentTarget.parent.remove(currentTarget,false,false);
+        this.discoveredblock.add(currentTarget);
+        currentTarget.body.immovable = true;
+        currentTarget.isTweening = false;
         var fungo = null;
         if(!currentTarget.vita){
             //identifica che si tratta di un fungo ed il tipo di fungo
@@ -228,36 +241,46 @@ var playState = {
                 fungo.scrivi = '1UP';
             }
         }
-        
+        this.temporaneo.add(fungo);
+        fungo.body.gravity.y=0;
         fungo.coin = false;
-        this.special.add(fungo);
         var ypos = currentTarget.position.y-32;
         var tween1 = game.add.tween(fungo).to({y: ypos}, 500, Phaser.Easing.Linear.none,false);
-        if(!fungo.isPianta){
-            tween1.onComplete.add(function move(currentTarget, currentTween) { 
-                currentTarget.body.gravity.y = 1600;
+        tween1.onComplete.add(function move(currentTarget, currentTween) {
+            this.special.add(currentTarget);
+            if(!fungo.isPianta){
+                currentTarget.body.gravity.y = 1800;
                 currentTarget.body.velocity.x = 150;
-            });
-        }
+            }
+            },this);
         tween1.start();
     },
     
     callbackstella: function(currentTarget, currentTween){
+        currentTarget.isTweening = false;
         var stella = this.createobject(currentTarget,4,'16');
         if(!stella.stella){
             stella.animations.add('lampeggia', [15, 16, 17, 18,17,16], 8, true);
             stella.animations.play('lampeggia');
+            stella.scrivi = '1000';
             stella.isStella=true;
         }
-        this.special.add(stella);
+        this.temporaneo.add(stella);
         var ypos = currentTarget.position.y-32;
         var tween1 = game.add.tween(stella).to({y: ypos}, 500, Phaser.Easing.Linear.none,false);
-        //tween1.onComplete.add(function move(currentTarget, currentTween) { 
-        //    currentTarget.body.gravity.y = 1600;
-         //   currentTarget.body.velocity.x = 150;
-        //});
+        tween1.onComplete.add(function move(currentTarget, currentTween) { 
+            this.special.add(stella);
+            currentTarget.body.gravity.y = 1000;
+            currentTarget.body.velocity.x = 150;
+            currentTarget.body.velocity.y = -250;
+            currentTarget.body.bounce.x=1;
+            currentTarget.body.bounce.y=1;
+            currentTarget.body.checkCollision.up = false;
+        },this);
         tween1.start();
-        
+        currentTarget.parent.remove(currentTarget,false,false);
+        this.discoveredblock.add(currentTarget);
+        currentTarget.body.immovable = true;
     },
     
     timeout: function(){
@@ -274,20 +297,60 @@ var playState = {
         movingTarget.body.velocity.x = 0;
         movingTarget.kill();
         this.ricicla.add(movingTarget);
-        var xpos = mario.scale.x * (mario.width+16);
-        this.pointtext(mario.position.x-xpos,mario.position.y-mario.height-32,movingTarget.scrivi);
-        if(!movingTarget.vita){
-            this.labels.updatescore(1000);
-            if(movingTarget.isFungo){
-                this.supermario.isBigger=true;
-            }
+        this.pointtext(movingTarget.position.x,movingTarget.position.y,movingTarget.scrivi);
+        if(!movingTarget.vita){this.labels.updatescore(1000);}
+        if(movingTarget.isFungo){
+            this.supermario.isBigger=true;
         }
-        else{mario.body.touching.up=false;}
+        else{
+            mario.body.touching.up=false;
+            if(movingTarget.vita){game.global.life++;}
+        }
     },
     
     //tween di quando mario sbatte nei blocchi
     collisionTween: function(toTween){
         return game.add.tween(toTween).to({y: toTween.position.y-16}, 200, Phaser.Easing.Linear.none).to({y: toTween.position.y+4}, 125,Phaser.Easing.Linear.none).to({y: toTween.position.y}, 75,Phaser.Easing.Linear.none);
+    },
+    
+    preventCollision: function(special, blocco){
+        if(!special.isStella){
+            if(blocco.isTweening || special.position.x<=blocco.position+16 || special.isStella){return true;}
+            //fungo è oltre la metà del blocco
+            if(special.position.x>blocco.position.x+16){ 
+                return this.nextblock(this.arraychildren,blocco.position.x+32,blocco.position.y+32,2);
+            }
+            else {return true;}
+        } else{
+            if(blocco.object){
+                if(blocco.position.y>=special.position.y){return false}
+                else{
+                    this.arraychildren[2].sort(this.sortfunction);
+                    if(special.body.velocity.x>0)  
+                        return this.nextblock(this.arraychildren,blocco.position.x-32,blocco.position.y,3);
+                    else return this.nextblock(this.arraychildren,blocco.position.x+32,blocco.position.y,3);
+                }
+                return true;
+            }
+        }
+    },
+    
+    itemCollision: function(special, blocco){
+        if(!special.isStella){
+            if(special.body.velocity.x==0){
+                if(special.body.touching.right)
+                    special.body.velocity.x=-150;
+                else special.body.velocity.x=150;
+            }else if(blocco.isTweening){
+                var direction = 1;
+                special.body.velocity.y=-350;
+                console.log('wtf');
+                if(special.position.x<blocco.position.x+10 && special.body.velocity.x>0){
+                    direction = -1;        
+                } else if(special.body.velocity.x<0) {direction = -1;}
+                special.body.velocity.x=150*direction;
+            }
+        }
     },
     
     //x,y serve per sapere il punto in cui dovrà apparire il label, 
@@ -325,5 +388,46 @@ var playState = {
             object = game.add.sprite(currentTarget.position.x, currentTarget.position.y, 'animazione', j);
         } else{object.reset(currentTarget.position.x, currentTarget.position.y);}
         return object;
+    },
+    
+    binarysearch(arr, x,y, start, end) { 
+       
+        // Base Condtion 
+        if (start > end) return false; 
+   
+        // Find the middle index 
+        let mid=Math.floor((start + end)/2); 
+        //console.log(mid);
+        // Compare mid with given key x 
+        if (arr[mid].position.x===x) {
+            if(arr[mid].position.y===y)return true;
+            else if(arr[mid].position.y>y) return binarysearch(arr, x,y, start, mid-1);
+            else return this.binarysearch(arr, x,y, mid+1, end);
+                
+        }
+          
+        // If element at mid is greater than x, 
+        // search in the left half of mid 
+        if(arr[mid].position.x > x)  
+            return this.binarysearch(arr, x,y, start, mid-1); 
+        else
+  
+            // If element at mid is smaller than x, 
+            // search in the right half of mid 
+            return this.binarysearch(arr, x,y, mid+1, end); 
+    },
+    
+    //ritorna false se è presente un blocco con cui colliderà
+    nextblock(array,x,y,lenght){
+        var i = 0;
+        for(i=0;i<lenght;i++)
+            if(this.binarysearch(array[i],x,y,0,array[i].length-1)) return false;
+        return true;
+    },
+    
+    sortfunction(a,b){
+        if(a.position.x===b.position.x) 
+            return a.position.y-b.position.y;
+        else return a.position.x-b.position.x;
     }
 };

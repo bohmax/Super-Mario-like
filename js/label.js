@@ -4,7 +4,7 @@ class Label{
     }
     
     draw(){
-        this.coin = game.add.sprite(165, 25, 'animazione','0');
+        this.coin = game.add.sprite(165, 25, 'animazione','1');
         this.coin.animations.add('flip', [0, 1, 2, 3], 8, true);
         
         this.scorestringa = '000000';
