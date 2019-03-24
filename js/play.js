@@ -2,6 +2,7 @@ var playState = {
     
     create: function() {
 
+        //this.bmd = game.make.bitmapData();
         game.stage.backgroundColor = '#3498db';
         this.labels = new Label();
         this.labels.draw();
@@ -14,6 +15,9 @@ var playState = {
         this.supermario.gravity();
         this.supermario.animation();
         this.labels.followcamera();
+        
+        //this.bmd.copy('mario_animation');
+        //this.bmd.addToWorld();
         
         this.cursor = game.input.keyboard.createCursorKeys();
         
@@ -56,6 +60,15 @@ var playState = {
         this.specialblock.setAll('body.immovable', true);
         this.block.setAll('body.immovable', true);
         
+        //per rendere i muri invisibili colpibili solo dal basso
+        this.specialblock.forEach(function(blocco){
+            if(blocco.vita){
+                blocco.body.checkCollision.up = false;
+                blocco.body.checkCollision.left = false;
+                blocco.body.checkCollision.right = false;
+            }
+        }, this)
+        
         this.arraychildren = new Array(this.specialblock.children,this.block.children,this.discoveredblock.children);
         this.special.children.sort(this.sortfunction);
         this.block.children.sort(this.sortfunction);
@@ -97,7 +110,9 @@ var playState = {
         game.physics.arcade.collide(this.mario, this.block, this.onSpecialCollide,null,this);
         game.physics.arcade.collide(this.mario, this.discoveredblock);
         game.physics.arcade.collide(this.mario, this.map.layer);
-        this.movePlayer();
+        if(!this.stop){
+            this.movePlayer();
+        }
         this.movecamera();
         
         this.labels.settime(this.countDown);
@@ -105,7 +120,6 @@ var playState = {
         if(!this.mario.inWorld){
             this.playerDie();
         }
-        
     },
     
     movePlayer: function() {
@@ -236,17 +250,20 @@ var playState = {
             fungo.scrivi = '1000';
         } else{
             fungo = this.createobject(currentTarget,1,'11');
+            currentTarget.body.checkCollision.up = true;
+            currentTarget.body.checkCollision.left = true;
+            currentTarget.body.checkCollision.right = true;
             if(!fungo.vita){
                 fungo.vita = true;
                 fungo.scrivi = '1UP';
             }
         }
         this.temporaneo.add(fungo);
-        fungo.body.gravity.y=0;
+        fungo.body.gravity.y = 0;
         fungo.coin = false;
         var ypos = currentTarget.position.y-32;
         var tween1 = game.add.tween(fungo).to({y: ypos}, 500, Phaser.Easing.Linear.none,false);
-        tween1.onComplete.add(function move(currentTarget, currentTween) {
+        tween1.onComplete.add(function (currentTarget, currentTween) {
             this.special.add(currentTarget);
             if(!fungo.isPianta){
                 currentTarget.body.gravity.y = 1800;
@@ -269,7 +286,7 @@ var playState = {
         var ypos = currentTarget.position.y-32;
         var tween1 = game.add.tween(stella).to({y: ypos}, 500, Phaser.Easing.Linear.none,false);
         tween1.onComplete.add(function move(currentTarget, currentTween) { 
-            this.special.add(stella);
+            this.special.add(currentTarget);
             currentTarget.body.gravity.y = 1000;
             currentTarget.body.velocity.x = 150;
             currentTarget.body.velocity.y = -250;
@@ -299,8 +316,20 @@ var playState = {
         this.ricicla.add(movingTarget);
         this.pointtext(movingTarget.position.x,movingTarget.position.y,movingTarget.scrivi);
         if(!movingTarget.vita){this.labels.updatescore(1000);}
-        if(movingTarget.isFungo){
-            this.supermario.isBigger=true;
+        if(!movingTarget.vita){
+            if(!movingTarget.isStella){
+                //animazione di gigantificazione di mario
+                if(movingTarget.isFungo && !this.supermario.isBigger){ this.stopgame(); this.supermario.biganimation(this);}
+                else if(movingTarget.isPianta && this.supermario.isBigger && !this.supermario.isFury){
+                    this.stopgame();
+                    this.supermario.isFury = true;
+                    this.supermario.standstill();
+                    var twen = game.add.tween(this.mario).to( {tint: 0x656363}, 400,null,true, 0, 1, true);
+                    twen.onComplete.add(function(r,s){this.resumegame();},this);}
+            } else{
+                var twen = game.add.tween(this.mario).to( {tint: 0x656363}, 950,null,true, 0, 5, true);
+                twen.onComplete.add(function(r,s){this.resumegame();},this);
+            }
         }
         else{
             mario.body.touching.up=false;
@@ -351,6 +380,34 @@ var playState = {
                 special.body.velocity.x=150*direction;
             }
         }
+    },
+    
+    //funzione che serve per bloccare gli altri oggetti in movimento nel gioco
+    stopgame: function(){
+        game.tweens.pauseAll();
+        this.special.setAll('body.moves',false);
+        this.countDown.pause();
+        this.specialblock.forEach(function(blocco){
+            blocco.animations.stop();
+        }, this)
+        this.mario.body.moves = false
+        this.supermario.lastframe = this.mario.frame; 
+        this.mario.animations.stop();
+        this.mario.body.velocity.x=0;
+        this.stop = true;
+    },
+    
+    resumegame: function(){
+        game.tweens.resumeAll();
+        this.special.setAll('sprite.body.moves',true);
+        this.specialblock.forEach(function(blocco){
+            if(blocco.frame-4>0)
+                blocco.animations.play('bling');
+            }, this)
+        this.mario.body.moves = true;
+        this.stop = false;
+        if(this.supermario.lastframe===4){this.mario.frame = 13;}
+        this.countDown.resume();
     },
     
     //x,y serve per sapere il punto in cui dovrà apparire il label, 

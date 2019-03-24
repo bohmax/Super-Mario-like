@@ -35,7 +35,8 @@ class Mario{
     
     animation(){
         this.mario.animations.add('walk', [1, 2, 3], 8, true);
-        this.mario.animations.add('jump', [4], 8, true);
+        this.mario.animations.add('walkbig', [8, 9, 10], 8, true);
+        this.mario.animations.add('walkfury', [15, 16, 17], 8, true);
     }
     
     position(map){
@@ -66,9 +67,23 @@ class Mario{
                 this.mario.anchor.setTo(0, 1);
             }
             if(this.mario.body.velocity.x > 80){
-                this.mario.frame = 5;
-                this.mario.body.setSize(26,32);
-            } else if(this.mario.body.x!=27){this.mario.animations.play('walk');this.mario.body.setSize(27,32);}
+                if(!this.isBigger){this.mario.body.setSize(26,32);this.mario.frame = 5;}
+                else {
+                    this.mario.body.setSize(30,64);
+                    if(!this.isFury) this.mario.frame = 12;
+                    else this.mario.frame = 19;
+                }
+            } else if(this.mario.animations.name.includes('walk')){
+                if(!this.isBigger){
+                    this.mario.animations.play('walk');
+                    this.mario.body.setSize(28,32);
+                } else {
+                    this.mario.body.setSize(34,64);
+                    if(!this.isFury)
+                        this.mario.animations.play('walkbig');
+                    else this.mario.animations.play('walkfury');
+                }
+            }
         }
     }
     
@@ -92,9 +107,22 @@ class Mario{
                 this.mario.anchor.setTo(1, 1);
             }
             if(this.mario.body.velocity.x < -80){
-                this.mario.frame = 5;
-                this.mario.body.setSize(26,32);
-            } else if(this.mario.body.x!=27){this.mario.animations.play('walk');this.mario.body.setSize(27,32);}
+                if(!this.isBigger){this.mario.body.setSize(26,32);this.mario.frame = 5;}
+                else{
+                    this.mario.body.setSize(30,64);
+                    if(!this.isFury) this.mario.frame = 12;
+                    else this.mario.frame = 19;
+                }
+            } else if(this.mario.animations.name.includes('walk')){
+                if(!this.isBigger){
+                    this.mario.animations.play('walk');
+                    this.mario.body.setSize(28,32);
+                } else {
+                    this.mario.body.setSize(34,64);
+                    if(!this.isFury) this.mario.animations.play('walkbig');
+                    else this.mario.animations.play('walkfury');
+                }
+            }
         }
     }
     
@@ -106,11 +134,10 @@ class Mario{
                 if(this.touchingdown()){
                     this.Ystart = this.mario.body.position.y;
                     this.mario.body.velocity.y -= 450;
-                    this.mario.animations.play('jump');
+                    this.standjump();
                     this.firstjump = false;
                     this.hastouchedup = false;
                     //setta la dimenensione del body
-                    this.mario.body.setSize(34,32);
                 }
             } 
             else if(pos <= 112){
@@ -131,25 +158,17 @@ class Mario{
     
     stop(){
         //console.log(this.mario.body.velocity.x);
-        if(this.mario.body.velocity.x > 0){
-            this.mario.body.velocity.x -= 10;
-            if(this.touchingdown() && this.mario.animations.name.includes('jump')){
-               this.mario.animations.play('walk');
-            }
-        } else if(this.mario.body.velocity.x < 0){
+        if(this.mario.body.velocity.x > 0){this.mario.body.velocity.x -= 10;} 
+        else if(this.mario.body.velocity.x < 0){
             if((this.mario.x-this.mario.width) < game.camera.x){
                 this.mario.body.velocity.x = 0;
             } 
             else {this.mario.body.velocity.x += 10;}
-            if(this.touchingdown() && this.mario.animations.name.includes('jump')){
-               this.mario.animations.play('walk');
-            }
         }
-        if(this.touchingdown() && this.mario.body.velocity.x == 0 && this.mario.frame!=0){
+        if(this.touchingdown() && this.mario.body.velocity.x == 0 && this.mario.frame%7!=0){
             this.mario.animations.stop(); // Stop animations
             // Change frame (stand still)
-            this.mario.body.setSize(26,32);
-            this.mario.frame = 0;
+            this.standstill();
         }
     }
     
@@ -159,5 +178,97 @@ class Mario{
     
     touchingup(){
         return this.mario.body.blocked.up || this.mario.body.touching.up;
+    }
+    
+    standstill(){
+        if(!this.isBigger){
+            this.mario.body.setSize(26,32);
+            this.mario.frame = 0;
+        } else{
+            if(this.mario.scale.y===1)
+                this.mario.body.setSize(32,64);
+            if(!this.isFury) this.mario.frame = 7;
+            else  this.mario.frame = 14;
+        }
+    }
+    
+    standjump(){
+        this.mario.animations.stop();
+        if(!this.isBigger){
+            this.mario.frame = 4;
+            this.mario.body.setSize(34,32);
+        } else{
+            this.mario.body.setSize(32,64);
+            if(!this.isFury) this.mario.frame = 11;
+            else  this.mario.frame = 18;
+        }
+    }
+    
+    mariohalfbig(){
+        this.mario.scale.x =Math.sign(this.mario.scale.x)* 0.9;
+        this.mario.scale.y = 0.75;
+        this.isBigger=true;
+        this.standstill();
+    }
+    
+    normalmario(){
+        this.mario.scale.x = Math.sign(this.mario.scale.x)* 1;
+        this.mario.scale.y = 1;
+        this.isBigger = false;
+        this.standstill();
+    }
+    
+    bigmario(){
+        this.mario.scale.x = Math.sign(this.mario.scale.x) * 1;
+        this.mario.scale.y = 1;
+        this.isBigger = true;
+        this.standstill();
+    }
+    
+    firstbigframe(time,stop){
+        game.time.events.add(time, function () {
+            this.mariohalfbig(time);
+            game.time.events.add(time, function () {
+                this.normalmario(time);
+                game.time.events.add(time, function () {
+                    this.mariohalfbig(time);
+                    game.time.events.add(time, function () {
+                        this.normalmario(time);
+                        this.normaltobigtonormal(time,stop);
+                    },this);
+                },this);
+            },this);
+        },this);
+    }
+    
+    normaltobigtonormal(time,stop){
+        game.time.events.add(time, function () {
+            this.mariohalfbig(time);
+            game.time.events.add(time, function () {
+                this.bigmario(time);
+                this.bigmario(time);
+                game.time.events.add(time, function () {
+                    this.normalmario(time);
+                    this.lastbigframe(time,stop);
+                },this);
+            },this);
+        },this);
+    }
+    
+    lastbigframe(time,stop){
+        game.time.events.add(time, function () {
+            this.mariohalfbig(time);
+            game.time.events.add(time, function () {
+                this.bigmario(time);
+                game.time.events.add(time, function () {
+                    stop.resumegame();
+                },this);
+            },this);  
+        },this);
+    }
+    
+    biganimation(stop){
+        var time = 150;
+        this.firstbigframe(time,stop);
     }
 }
