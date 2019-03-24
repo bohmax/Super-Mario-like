@@ -30,7 +30,6 @@ class Mario{
     gravity(){
         game.physics.arcade.enable(this.mario);
         this.mario.body.gravity.y = 1600;
-        //this.mario.body.setSize(this.mario.body.x, this.mario.body.y, 8, 0);
     }
     
     animation(){
@@ -160,7 +159,7 @@ class Mario{
         //console.log(this.mario.body.velocity.x);
         if(this.mario.body.velocity.x > 0){this.mario.body.velocity.x -= 10;} 
         else if(this.mario.body.velocity.x < 0){
-            if((this.mario.x-this.mario.width) < game.camera.x){
+            if((this.mario.x+this.mario.width) < game.camera.x){
                 this.mario.body.velocity.x = 0;
             } 
             else {this.mario.body.velocity.x += 10;}

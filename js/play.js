@@ -2,12 +2,14 @@ var playState = {
     
     create: function() {
 
-        //this.bmd = game.make.bitmapData();
         game.stage.backgroundColor = '#3498db';
         this.labels = new Label();
         this.labels.draw();
         
+        //array che contiene il punto di spwan dei nemici
         this.map = new Map();
+        this.enemypoint = this.map.map.objects.enemy;
+        //indica la posizione dell'ultimo nemico spawnato
         this.supermario = new Mario(this.map);
         this.mario = this.supermario.mario;
         
@@ -15,9 +17,6 @@ var playState = {
         this.supermario.gravity();
         this.supermario.animation();
         this.labels.followcamera();
-        
-        //this.bmd.copy('mario_animation');
-        //this.bmd.addToWorld();
         
         this.cursor = game.input.keyboard.createCursorKeys();
         
@@ -36,6 +35,8 @@ var playState = {
         this.extraobject = game.add.group();
         //gruppo usato per memorizzare gli oggetti come i funghi attualmente presenti in gioco
         this.special = game.add.group();
+        //gruppo usato per immagazzinare i nemici
+        this.enemy = game.add.group();
         //gruppo usato per reciclare gli oggetti già utilizzati
         this.ricicla = game.add.group();
         //gruppo per inserire temporaneamente oggetti
@@ -47,18 +48,21 @@ var playState = {
         this.extraobject.enableBody = true;
         this.special.enableBody = true;
         this.temporaneo.enableBody = true;
+        this.enemy.enableBody = true;
         game.world.sendToBack(this.temporaneo);
         game.world.bringToTop(this.special);
+        game.world.bringToTop(this.mario);
         
         this.map.map.createFromObjects('Special', 1, 'animazione', 0, true, false, this.specialblock);
         this.map.map.createFromObjects('block', 5, 'animazione', 8, true, false, this.block);
         
         this.specialblock.callAll('animations.add', 'animations', 'bling', [4, 5, 6, 5,4,4], 8, true);
         this.specialblock.callAll('animations.play', 'animations', 'bling');
-        this.map.map.createFromObjects('Invisible', 1, 'animazione', 21,true,false,this.specialblock);
+        this.map.map.createFromObjects('Invisible', 1, 'animazione', 26,true,false,this.specialblock);
         this.map.map.createFromObjects('Special', 5, 'animazione', 8, true, false, this.specialblock);
         this.specialblock.setAll('body.immovable', true);
         this.block.setAll('body.immovable', true);
+        this.block.setAll('body.moves', false);
         
         //per rendere i muri invisibili colpibili solo dal basso
         this.specialblock.forEach(function(blocco){
@@ -72,6 +76,7 @@ var playState = {
         this.arraychildren = new Array(this.specialblock.children,this.block.children,this.discoveredblock.children);
         this.special.children.sort(this.sortfunction);
         this.block.children.sort(this.sortfunction);
+        this.enemypoint.sort(this.sortfunction);
         
         // Create a custom timer
         this.countDown = game.time.create(false);
@@ -82,15 +87,17 @@ var playState = {
         // Start the timer
         this.countDown.start();
         
-        //velocità dei funghi e nemici
-        this.velocity = 150;
-        
         //imposto i muri per distruggere gli oggetti bonus
         var left = game.add.sprite(-64, game.height,null,0,this.extraobject);
         var bottom = game.add.sprite(-32, game.height+32,null,0,this.extraobject);
         left.scale.y = -game.height-32;
         bottom.scale.x = game.width+96;
         this.extraobject.setAll('fixedToCamera', true);
+        
+        //animazioni nemici
+        this.mario.animations.add('walk', [1, 2, 3], 8, true);
+        this.mario.animations.add('walkbig', [8, 9, 10], 8, true);
+        this.mario.animations.add('walkfury', [15, 16, 17], 8, true);
     },
     
     update: function() {
@@ -100,11 +107,17 @@ var playState = {
             game.physics.arcade.collide(this.special, this.block,this.itemCollision,this.preventCollision,this);
             game.physics.arcade.collide(this.special, this.discoveredblock);
             game.physics.arcade.overlap(this.mario, this.special, this.onOverlap,null,this);
-            game.physics.arcade.overlap(this.special, this.extraobject, function(r,s){console.log('ugg');
-                                                                                    r.parent.remove(r);
-                                                                                    this.ricicla.add(r);
-                                                                                    r.kill();
-                                                                                    },null,this);
+            game.physics.arcade.overlap(this.special, this.extraobject, 
+            function(r,s){console.log('ugg');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
+        }
+        if(this.enemy.length>0){
+            game.physics.arcade.collide(this.enemy, this.map.layer,this.enemymove,null,this);
+            game.physics.arcade.collide(this.enemy, this.enemy,this.enemytouch,null,this);
+            game.physics.arcade.collide(this.enemy, this.specialblock,this.itemCollision,this.preventCollision,this);
+            game.physics.arcade.collide(this.enemy, this.block,this.itemCollision,this.preventCollision,this);
+            game.physics.arcade.collide(this.enemy, this.discoveredblock);
+            game.physics.arcade.overlap(this.enemy, this.extraobject, 
+            function(r,s){console.log('uff');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
         }
         game.physics.arcade.collide(this.mario, this.specialblock, this.onSpecialCollide,null,this);
         game.physics.arcade.collide(this.mario, this.block, this.onSpecialCollide,null,this);
@@ -112,6 +125,7 @@ var playState = {
         game.physics.arcade.collide(this.mario, this.map.layer);
         if(!this.stop){
             this.movePlayer();
+            this.enemySpawn();
         }
         this.movecamera();
         
@@ -177,6 +191,43 @@ var playState = {
         game.state.start('loadplay');
     },
     
+    enemySpawn: function(){
+        var originaly = 0,originalx =this.enemypoint[0].x,cameraposition = game.camera.position.x+game.camera.width,consecutive=0,repeat=1;
+        while(this.enemypoint.length>consecutive && originalx===this.enemypoint[0].x && repeat!=0){
+            repeat = 0;
+            originaly = this.enemypoint[0].y;
+            while(this.enemypoint.length>consecutive && cameraposition+96 >= (this.enemypoint[consecutive].x-(64*repeat))){
+                if(originaly===this.enemypoint[consecutive].y){
+                    var goomba;
+                    if(this.enemypoint[consecutive].properties.goomba){
+                        goomba = this.createobject(this.enemypoint[consecutive].x,originaly-32,5,19);
+                        if(!goomba.isGoomba){
+                            goomba.animations.add('walk',[19,20],4,true);
+                            goomba.animations.play('walk');
+                            goomba.isGoomba = true;
+                            goomba.myvelocity = 60;
+                        }
+                    } 
+                    else{
+                        goomba = this.createobject(this.enemypoint[consecutive].x,originaly-48,6,21);
+                        if(!goomba.isTartaGoomba){
+                            goomba.animations.add('walk',[22,23],4,true);
+                            goomba.animations.add('scudo',[24,25],4,true);
+                            goomba.animations.play('walk');
+                            goomba.isTartaGoomba = true;
+                            goomba.myvelocity = 100;
+                        }
+                    }
+                    this.enemy.add(goomba);
+                    goomba.body.gravity.y = 1800;
+                    goomba.body.velocity.x = -60;
+                    this.enemypoint.splice(consecutive,1);
+                    repeat++;
+                } else{consecutive++;}
+            }
+        }
+    },
+    
     onSpecialCollide: function(mario, specialblockitem) {
         if(mario.body.touching.up){
             var twen = this.collisionTween(specialblockitem);
@@ -186,7 +237,7 @@ var playState = {
                     this.labels.updatescore(200);
                     game.global.collectedcoin++;
                     this.labels.updatecollected(game.global.collectedcoin);
-                    var coin1 = this.createobject(specialblockitem,0,'14');
+                    var coin1 = this.createobject(specialblockitem.position.x,specialblockitem.position.y,0,'14');
                     if(!coin1.coin){
                         coin1.animations.add('flip', [0, 1, 2, 3], 20, true);
                         coin1.animations.play('flip');
@@ -234,28 +285,31 @@ var playState = {
         if(!currentTarget.vita){
             //identifica che si tratta di un fungo ed il tipo di fungo
             if(!this.supermario.isBigger){
-                fungo = this.createobject(currentTarget,2,'10');
+                fungo = this.createobject(currentTarget.position.x,currentTarget.position.y,2,'10');
                 if(!fungo.isFungo){
                     fungo.isFungo = true;
                     fungo.scrivi = '1000';
+                    fungo.myvelocity = 150;
                 }
             } else{
-                fungo = this.createobject(currentTarget,3,'12');
+                fungo = this.createobject(currentTarget.position.x,currentTarget.position.y,3,'12');
                 if(!fungo.isPianta){
                     fungo.isPianta = true;
                     fungo.animations.add('spling', [11, 12, 13, 14,13,12], 8, true);
                     fungo.animations.play('spling');
+                    fungo.myvelocity = 150;
                 }
             }
             fungo.scrivi = '1000';
         } else{
-            fungo = this.createobject(currentTarget,1,'11');
+            fungo = this.createobject(currentTarget.position.x,currentTarget.position.y,1,'11');
             currentTarget.body.checkCollision.up = true;
             currentTarget.body.checkCollision.left = true;
             currentTarget.body.checkCollision.right = true;
             if(!fungo.vita){
                 fungo.vita = true;
                 fungo.scrivi = '1UP';
+                fungo.myvelocity = 150;
             }
         }
         this.temporaneo.add(fungo);
@@ -275,12 +329,13 @@ var playState = {
     
     callbackstella: function(currentTarget, currentTween){
         currentTarget.isTweening = false;
-        var stella = this.createobject(currentTarget,4,'16');
+        var stella = this.createobject(currentTarget.position.x,currentTarget.position.y,4,'16');
         if(!stella.stella){
             stella.animations.add('lampeggia', [15, 16, 17, 18,17,16], 8, true);
             stella.animations.play('lampeggia');
             stella.scrivi = '1000';
             stella.isStella=true;
+            stella.myvelocity = 150;
         }
         this.temporaneo.add(stella);
         var ypos = currentTarget.position.y-32;
@@ -304,9 +359,14 @@ var playState = {
         this.playerDie();
     },
     
+    enemytouch: function(enemy1, enemy2){
+        if(enemy1.body.touching.right){enemy1.body.velocity.x = -enemy1.myvelocity;enemy2.body.velocity.x = enemy2.myvelocity;}
+        else if(enemy1.body.touching.right){enemy1.body.velocity.x = enemy1.myvelocity; enemy2.body.velocity.x = -enemy2.myvelocity;}
+    },
+    
     enemymove: function(tomove, block){
-        if(tomove.body.blocked.right){tomove.body.velocity.x = -this.velocity;}
-        else if(tomove.body.blocked.left){tomove.body.velocity.x = this.velocity;}
+        if(tomove.body.blocked.right){tomove.body.velocity.x = -tomove.myvelocity;}
+        else if(tomove.body.blocked.left){tomove.body.velocity.x = tomove.myvelocity;}
     },
     
     onOverlap: function(mario, movingTarget){
@@ -399,7 +459,7 @@ var playState = {
     
     resumegame: function(){
         game.tweens.resumeAll();
-        this.special.setAll('sprite.body.moves',true);
+        this.special.setAll('body.moves',true);
         this.specialblock.forEach(function(blocco){
             if(blocco.frame-4>0)
                 blocco.animations.play('bling');
@@ -431,6 +491,8 @@ var playState = {
             else if(oggettoda==2 && element.isFungo){return element;}
             else if(oggettoda==3 && element.isPianta){return element;}
             else if(oggettoda==4 && element.isStella){return element;}
+            else if(oggettoda==5 && element.isGoomba){return element}
+            else if(oggettoda==6 && element.isTartaGoomba){return element}
         }
         return null;
     },
@@ -439,11 +501,11 @@ var playState = {
     //currenttarget è per la posizione,
     //i l'indice da passare a iterate group
     //j il frame da visualizzare
-    createobject(currentTarget,i,j){
+    createobject(x,y,i,j){
         var object = this.iterategroup(this.ricicla,i);
         if(object == null){
-            object = game.add.sprite(currentTarget.position.x, currentTarget.position.y, 'animazione', j);
-        } else{object.reset(currentTarget.position.x, currentTarget.position.y);}
+            object = game.add.sprite(x, y, 'animazione', j);
+        } else{object.reset(x, y);}
         return object;
     },
     
@@ -483,8 +545,15 @@ var playState = {
     },
     
     sortfunction(a,b){
-        if(a.position.x===b.position.x) 
-            return a.position.y-b.position.y;
-        else return a.position.x-b.position.x;
+        var xa,xb,ya,yb;
+        if(a.position!=undefined){
+            xa = a.position.x; 
+            xb = b.position.x;
+            ya = a.position.y;
+            yb = b.position.y;
+        } else {xa = a.x;xb = b.x;ya = a.y;yb = b.y;}
+        if(xa===xb) 
+            return ya-b.yb;
+        else return xa-xb;
     }
 };
