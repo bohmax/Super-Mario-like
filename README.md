@@ -5,7 +5,7 @@ The code is in Javascript, To play you need to open the game with your computer 
 To Do
 End level
 mario animation interating with object while big and fury
-add enemy
+mario interating with enemy
 
 Make mario run if I have time
 Make mario collide correctly
