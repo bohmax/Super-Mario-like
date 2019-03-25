@@ -36,6 +36,7 @@ class Mario{
         this.mario.animations.add('walk', [1, 2, 3], 8, true);
         this.mario.animations.add('walkbig', [8, 9, 10], 8, true);
         this.mario.animations.add('walkfury', [15, 16, 17], 8, true);
+        this.mario.play = false;
     }
     
     position(map){
@@ -51,8 +52,8 @@ class Mario{
     
     moveleft(){
         //per capire se sono nei limiti della camera
-        if((this.mario.x+this.mario.width) > game.camera.x){
-            if(this.mario.body.velocity.x != -200 && !this.hastouchedup){
+        if(this.mario.x > game.camera.x+Math.sign(this.mario.width)*this.mario.width){
+            if(this.mario.body.velocity.x > -200 && !this.hastouchedup){
                 this.mario.body.velocity.x -= 10;
             }
         } 
@@ -72,7 +73,8 @@ class Mario{
                     if(!this.isFury) this.mario.frame = 12;
                     else this.mario.frame = 19;
                 }
-            } else if(this.mario.animations.name.includes('walk')){
+            } else if(!this.mario.play){
+                this.mario.play = true;
                 if(!this.isBigger){
                     this.mario.animations.play('walk');
                     this.mario.body.setSize(28,32);
@@ -83,12 +85,19 @@ class Mario{
                     else this.mario.animations.play('walkfury');
                 }
             }
+        } 
+        else if(this.mario.play){
+            this.mario.animations.stop();
+            this.mario.play = false;
+            if(!this.isBigger){this.mario.frame = 2;} 
+            else if(!this.isFury){this.mario.frame = 9;}
+            else this.mario.frame = 16;
         }
     }
     
     moveright(){
-        if((this.mario.x-this.mario.width) > game.camera.x){
-            if(this.mario.body.velocity.x != 200 && !this.hastouchedup){
+        if(this.mario.x > game.camera.x+Math.sign(this.mario.width)*this.mario.width){
+            if(this.mario.body.velocity.x < 200 && !this.hastouchedup){
                 this.mario.body.velocity.x += 10;
             }
         }
@@ -112,7 +121,8 @@ class Mario{
                     if(!this.isFury) this.mario.frame = 12;
                     else this.mario.frame = 19;
                 }
-            } else if(this.mario.animations.name.includes('walk')){
+            } else if(!this.mario.play){
+                this.mario.play = true;
                 if(!this.isBigger){
                     this.mario.animations.play('walk');
                     this.mario.body.setSize(28,32);
@@ -122,6 +132,12 @@ class Mario{
                     else this.mario.animations.play('walkfury');
                 }
             }
+        } else if(this.mario.play){
+            this.mario.animations.stop();
+            this.mario.play = false;
+            if(!this.isBigger){this.mario.frame = 2;} 
+            else if(!this.isFury){ this.mario.frame = 9;}
+            else this.mario.frame = 16;
         }
     }
     
@@ -130,7 +146,7 @@ class Mario{
         var pos = this.Ystart - this.mario.body.position.y;
         if(!this.mario.isjumping){
             if(this.firstjump){
-                if(this.touchingdown()){
+                if(this.touchingdown() && ! this.touchingup()){
                     this.Ystart = this.mario.body.position.y;
                     this.mario.body.velocity.y -= 450;
                     this.standjump();
@@ -149,7 +165,6 @@ class Mario{
             }
         }
         else{
-            this.mario.isjumping = true;
             return true;
         }
         return false;
@@ -159,20 +174,21 @@ class Mario{
         //console.log(this.mario.body.velocity.x);
         if(this.mario.body.velocity.x > 0){this.mario.body.velocity.x -= 10;} 
         else if(this.mario.body.velocity.x < 0){
-            if((this.mario.x+this.mario.width) < game.camera.x){
+            if(this.mario.x < game.camera.x+Math.sign(this.mario.width)*this.mario.width){
                 this.mario.body.velocity.x = 0;
             } 
             else {this.mario.body.velocity.x += 10;}
         }
-        if(this.touchingdown() && this.mario.body.velocity.x == 0 && this.mario.frame%7!=0){
+        if(this.touchingdown() && this.mario.body.velocity.x === 0 && this.mario.body.velocity.y === 0 && this.mario.frame%7!=0){
             this.mario.animations.stop(); // Stop animations
+            this.mario.play = false;
             // Change frame (stand still)
             this.standstill();
         }
     }
     
     touchingdown(){
-        return this.mario.body.onFloor() || this.mario.body.touching.down;
+        return this.mario.body.blocked.down || this.mario.body.touching.down;
     }
     
     touchingup(){
@@ -193,6 +209,7 @@ class Mario{
     
     standjump(){
         this.mario.animations.stop();
+        this.mario.play = false;
         if(!this.isBigger){
             this.mario.frame = 4;
             this.mario.body.setSize(34,32);
@@ -201,6 +218,10 @@ class Mario{
             if(!this.isFury) this.mario.frame = 11;
             else  this.mario.frame = 18;
         }
+    }
+    
+    standdead(){
+        this.mario.frame = 6;
     }
     
     mariohalfbig(){

@@ -41,6 +41,9 @@ var playState = {
         this.ricicla = game.add.group();
         //gruppo per inserire temporaneamente oggetti
         this.temporaneo = game.add.group();
+        this.temp = game.add.group();
+        this.tempenem = game.add.group();
+        this.todelete = game.add.group();
         
         this.specialblock.enableBody = true;
         this.discoveredblock.enableBody = true;
@@ -49,6 +52,7 @@ var playState = {
         this.special.enableBody = true;
         this.temporaneo.enableBody = true;
         this.enemy.enableBody = true;
+        this.temp.enableBody = true;
         game.world.sendToBack(this.temporaneo);
         game.world.bringToTop(this.special);
         game.world.bringToTop(this.mario);
@@ -62,7 +66,6 @@ var playState = {
         this.map.map.createFromObjects('Special', 5, 'animazione', 8, true, false, this.specialblock);
         this.specialblock.setAll('body.immovable', true);
         this.block.setAll('body.immovable', true);
-        this.block.setAll('body.moves', false);
         
         //per rendere i muri invisibili colpibili solo dal basso
         this.specialblock.forEach(function(blocco){
@@ -73,10 +76,11 @@ var playState = {
             }
         }, this)
         
-        this.arraychildren = new Array(this.specialblock.children,this.block.children,this.discoveredblock.children);
+        this.arraychildren = new Array(this.specialblock.children,this.block.children,this.temp.children,this.discoveredblock.children);
         this.special.children.sort(this.sortfunction);
         this.block.children.sort(this.sortfunction);
         this.enemypoint.sort(this.sortfunction);
+        this.temp.children.sort(this.sortfunction);
         
         // Create a custom timer
         this.countDown = game.time.create(false);
@@ -101,10 +105,12 @@ var playState = {
     },
     
     update: function() {
+        //game.debug.body(this.mario);
         if(this.special.length>0){
             game.physics.arcade.collide(this.special, this.map.layer,this.enemymove,null,this);
             game.physics.arcade.collide(this.special, this.specialblock,this.itemCollision,this.preventCollision,this);
             game.physics.arcade.collide(this.special, this.block,this.itemCollision,this.preventCollision,this);
+            game.physics.arcade.collide(this.special, this.temp,this.itemCollision,this.preventCollision,this);
             game.physics.arcade.collide(this.special, this.discoveredblock);
             game.physics.arcade.overlap(this.mario, this.special, this.onOverlap,null,this);
             game.physics.arcade.overlap(this.special, this.extraobject, 
@@ -113,24 +119,30 @@ var playState = {
         if(this.enemy.length>0){
             game.physics.arcade.collide(this.enemy, this.map.layer,this.enemymove,null,this);
             game.physics.arcade.collide(this.enemy, this.enemy,this.enemytouch,null,this);
+            game.physics.arcade.overlap(this.enemy, this.tempenem,this.enemytouch,null,this);
             game.physics.arcade.collide(this.enemy, this.specialblock,this.itemCollision,this.preventCollision,this);
             game.physics.arcade.collide(this.enemy, this.block,this.itemCollision,this.preventCollision,this);
+            game.physics.arcade.collide(this.enemy, this.temp,this.itemCollision,this.preventCollision,this);
             game.physics.arcade.collide(this.enemy, this.discoveredblock);
             game.physics.arcade.overlap(this.enemy, this.extraobject, 
             function(r,s){console.log('uff');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
+            game.physics.arcade.collide(this.mario, this.enemy,this.onEnemyCollision,null,this);
         }
         game.physics.arcade.collide(this.mario, this.specialblock, this.onSpecialCollide,null,this);
         game.physics.arcade.collide(this.mario, this.block, this.onSpecialCollide,null,this);
         game.physics.arcade.collide(this.mario, this.discoveredblock);
         game.physics.arcade.collide(this.mario, this.map.layer);
+        game.physics.arcade.overlap(this.mario, this.temp,function(r,s){r.body.touching.up=true; r.body.velocity.y=50;},null,this);
+        game.physics.arcade.overlap(this.todelete, this.extraobject, 
+            function(r,s){console.log('ugg');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
+        
         if(!this.stop){
             this.movePlayer();
             this.enemySpawn();
         }
         this.movecamera();
-        
+            
         this.labels.settime(this.countDown);
-        
         if(!this.mario.inWorld){
             this.playerDie();
         }
@@ -157,10 +169,11 @@ var playState = {
         // If the up arrow key is pressed and the player is on the ground
         if (this.cursor.up.isDown) {
             if(!this.release){
-                if(this.mario.body.blocked.down){
+                if(this.supermario.touchingdown()){
                     this.mario.isjumping = false;
+                    this.mario.firstjump = true;
                 }
-                this.release = this.supermario.jump(this.release);
+                this.release = this.supermario.jump();
             }
         }
         else if(!this.cursor.up.isDown){
@@ -183,6 +196,7 @@ var playState = {
     
     playerDie: function() {
         // When the player dies, we go to the menu
+        this.stop = false;
         if(this.countDown.duration!=0){
             game.global.life--;
         } else{
@@ -202,14 +216,15 @@ var playState = {
                     if(this.enemypoint[consecutive].properties.goomba){
                         goomba = this.createobject(this.enemypoint[consecutive].x,originaly-32,5,19);
                         if(!goomba.isGoomba){
+                            console.log('afad');
                             goomba.animations.add('walk',[19,20],4,true);
                             goomba.animations.play('walk');
                             goomba.isGoomba = true;
                             goomba.myvelocity = 60;
-                        }
+                        } else {goomba.animations.play('walk'); goomba.body.moves = true;goomba.body.immovable = false;}
                     } 
                     else{
-                        goomba = this.createobject(this.enemypoint[consecutive].x,originaly-48,6,21);
+                        goomba = this.createobject(this.enemypoint[consecutive].x,originaly-48,6,22);
                         if(!goomba.isTartaGoomba){
                             goomba.animations.add('walk',[22,23],4,true);
                             goomba.animations.add('scudo',[24,25],4,true);
@@ -219,6 +234,8 @@ var playState = {
                         }
                     }
                     this.enemy.add(goomba);
+                    goomba.scale.y = 1;
+                    goomba.anchor.setTo(0, 0);
                     goomba.body.gravity.y = 1800;
                     goomba.body.velocity.x = -60;
                     this.enemypoint.splice(consecutive,1);
@@ -231,7 +248,7 @@ var playState = {
     onSpecialCollide: function(mario, specialblockitem) {
         if(mario.body.touching.up){
             var twen = this.collisionTween(specialblockitem);
-            twen.onComplete.add(function(r,s){r.isTweening=false;});
+            twen.onComplete.add(function(r,s){r.isTweening=false; this.block.add(r);},this);
             if(specialblockitem.parent == this.specialblock && !specialblockitem.isTweening){
                 if(specialblockitem.coin>0){
                     this.labels.updatescore(200);
@@ -266,6 +283,8 @@ var playState = {
                 }
             }   
             twen.start();
+            this.temp.add(specialblockitem);
+            this.temp.children.sort(this.sortfunction);
             specialblockitem.isTweening = true;
         }
     },
@@ -360,8 +379,8 @@ var playState = {
     },
     
     enemytouch: function(enemy1, enemy2){
-        if(enemy1.body.touching.right){enemy1.body.velocity.x = -enemy1.myvelocity;enemy2.body.velocity.x = enemy2.myvelocity;}
-        else if(enemy1.body.touching.right){enemy1.body.velocity.x = enemy1.myvelocity; enemy2.body.velocity.x = -enemy2.myvelocity;}
+        if(enemy1.position.x<enemy2.position.x){enemy1.body.velocity.x = -enemy1.myvelocity;enemy2.body.velocity.x = enemy2.myvelocity;}
+        else if(enemy1.position.x>=enemy2.position.x){enemy1.body.velocity.x = enemy1.myvelocity; enemy2.body.velocity.x = -enemy2.myvelocity;}
     },
     
     enemymove: function(tomove, block){
@@ -397,9 +416,42 @@ var playState = {
         }
     },
     
+    onEnemyCollision: function(mario, enemy){
+        if(mario.body.touching.down){
+            if(enemy.isGoomba){
+                mario.body.touching.down = false;
+                enemy.animations.stop();
+                enemy.frame = 21;
+                enemy.body.moves = false;
+                this.tempenem.add(enemy);
+                enemy.position.y = enemy.position.y+16;
+                this.pointtext(enemy.position.x,enemy.position.y,'100');
+                this.labels.updatescore(100);
+                mario.body.velocity.y = -400;
+                if(enemy.position.x+16>mario.position.x) {mario.body.velocity.x = -200;}
+                else{mario.body.velocity.x = 200;}
+                game.time.events.add(850, function () {
+                    enemy.kill();
+                    this.ricicla.add(enemy);
+                },this);
+            }
+        } else{
+            this.stopgame();
+            this.supermario.standdead();
+            mario.body.checkCollision.none = true;
+            mario.body.checkCollision.down = false;
+            game.time.events.add(100, function () {
+                mario.body.moves = true;
+                mario.body.gravity.y = 1000;
+                mario.body.velocity.y = -450; 
+            },this);
+        }
+    },
+    
     //tween di quando mario sbatte nei blocchi
     collisionTween: function(toTween){
-        return game.add.tween(toTween).to({y: toTween.position.y-16}, 200, Phaser.Easing.Linear.none).to({y: toTween.position.y+4}, 125,Phaser.Easing.Linear.none).to({y: toTween.position.y}, 75,Phaser.Easing.Linear.none);
+        var start = toTween.position.y
+        return game.add.tween(toTween).to({y: start-16}, 200, Phaser.Easing.Linear.none).to({y: start+4}, 125,Phaser.Easing.Linear.none).to({y: start}, 75,Phaser.Easing.Linear.none);
     },
     
     preventCollision: function(special, blocco){
@@ -407,7 +459,7 @@ var playState = {
             if(blocco.isTweening || special.position.x<=blocco.position+16 || special.isStella){return true;}
             //fungo è oltre la metà del blocco
             if(special.position.x>blocco.position.x+16){ 
-                return this.nextblock(this.arraychildren,blocco.position.x+32,blocco.position.y+32,2);
+                return this.nextblock(this.arraychildren,blocco.position.x+32,blocco.position.y+32,3);
             }
             else {return true;}
         } else{
@@ -416,8 +468,8 @@ var playState = {
                 else{
                     this.arraychildren[2].sort(this.sortfunction);
                     if(special.body.velocity.x>0)  
-                        return this.nextblock(this.arraychildren,blocco.position.x-32,blocco.position.y,3);
-                    else return this.nextblock(this.arraychildren,blocco.position.x+32,blocco.position.y,3);
+                        return this.nextblock(this.arraychildren,blocco.position.x-32,blocco.position.y,4);
+                    else return this.nextblock(this.arraychildren,blocco.position.x+32,blocco.position.y,4);
                 }
                 return true;
             }
@@ -425,18 +477,36 @@ var playState = {
     },
     
     itemCollision: function(special, blocco){
-        if(!special.isStella){
+        if(!(special.parent == this.enemy)){
+            if(!special.isStella){
+                if(special.body.velocity.x==0){
+                    if(special.body.touching.right)
+                        special.body.velocity.x=-150;
+                    else special.body.velocity.x=150;
+                }else if(blocco.isTweening){
+                    var direction = 1;
+                    special.body.velocity.y=-350;
+                    if(special.position.x<blocco.position.x+10 && special.body.velocity.x>0){
+                        direction = -1;        
+                    } else if(special.body.velocity.x<0) {direction = -1;}
+                    special.body.velocity.x=special.myvelocity*direction;
+                }
+            }
+        } 
+        else{
             if(special.body.velocity.x==0){
                 if(special.body.touching.right)
-                    special.body.velocity.x=-150;
-                else special.body.velocity.x=150;
+                    special.body.velocity.x=-special.myvelocity;
+                else special.body.velocity.x=special.myvelocity;
             }else if(blocco.isTweening){
                 var direction = 1;
-                special.body.velocity.y=-350;
-                console.log('wtf');
                 if(special.position.x<blocco.position.x+10 && special.body.velocity.x>0){
                     direction = -1;        
                 } else if(special.body.velocity.x<0) {direction = -1;}
+                this.todelete.add(special);
+                special.scale.setTo(1, -1);
+                special.anchor.setTo(0, 1);
+                special.body.velocity.y=-550;
                 special.body.velocity.x=150*direction;
             }
         }
@@ -446,11 +516,14 @@ var playState = {
     stopgame: function(){
         game.tweens.pauseAll();
         this.special.setAll('body.moves',false);
+        this.enemy.setAll('body.moves',false);
+        this.special.setAll('animations.paused',true);
+        this.enemy.setAll('animations.paused',true);
         this.countDown.pause();
         this.specialblock.forEach(function(blocco){
             blocco.animations.stop();
-        }, this)
-        this.mario.body.moves = false
+        }, this);
+        this.mario.body.moves = false;
         this.supermario.lastframe = this.mario.frame; 
         this.mario.animations.stop();
         this.mario.body.velocity.x=0;
@@ -460,10 +533,12 @@ var playState = {
     resumegame: function(){
         game.tweens.resumeAll();
         this.special.setAll('body.moves',true);
+        this.enemy.setAll('body.moves',true);
+        this.enemy.setAll('animations.paused',false);
         this.specialblock.forEach(function(blocco){
-            if(blocco.frame-4>0)
+            if((blocco.frame-4)<2)
                 blocco.animations.play('bling');
-            }, this)
+            }, this);
         this.mario.body.moves = true;
         this.stop = false;
         if(this.supermario.lastframe===4){this.mario.frame = 13;}
