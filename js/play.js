@@ -117,6 +117,7 @@ var playState = {
             function(r,s){console.log('ugg');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
         }
         if(this.enemy.length>0){
+            this.enemy.forEach( game.debug.body, game.debug );
             game.physics.arcade.collide(this.enemy, this.map.layer,this.enemymove,null,this);
             game.physics.arcade.collide(this.enemy, this.enemy,this.enemytouch,null,this);
             game.physics.arcade.overlap(this.enemy, this.tempenem,this.enemytouch,null,this);
@@ -222,19 +223,24 @@ var playState = {
                             goomba.isGoomba = true;
                             goomba.myvelocity = 60;
                         } else {goomba.animations.play('walk'); goomba.body.moves = true;goomba.body.immovable = false;}
+                        this.enemy.add(goomba);
                     } 
                     else{
                         goomba = this.createobject(this.enemypoint[consecutive].x,originaly-48,6,22);
                         if(!goomba.isTartaGoomba){
                             goomba.animations.add('walk',[22,23],4,true);
                             goomba.animations.add('scudo',[24,25],4,true);
-                            goomba.animations.play('walk');
                             goomba.isTartaGoomba = true;
-                            goomba.myvelocity = 100;
                         }
+                        goomba.timer = null;
+                        goomba.myvelocity = 100;
+                        goomba.attacked = false;
+                        goomba.isDead = false;
+                        goomba.animations.play('walk');
+                        this.enemy.add(goomba);
+                        goomba.body.setSize(32,48);
                     }
-                    this.enemy.add(goomba);
-                    goomba.scale.y = 1;
+                    goomba.scale.setTo(1,1);
                     goomba.anchor.setTo(0, 0);
                     goomba.body.gravity.y = 1800;
                     goomba.body.velocity.x = -60;
@@ -379,13 +385,24 @@ var playState = {
     },
     
     enemytouch: function(enemy1, enemy2){
-        if(enemy1.position.x<enemy2.position.x){enemy1.body.velocity.x = -enemy1.myvelocity;enemy2.body.velocity.x = enemy2.myvelocity;}
-        else if(enemy1.position.x>=enemy2.position.x){enemy1.body.velocity.x = enemy1.myvelocity; enemy2.body.velocity.x = -enemy2.myvelocity;}
+        if(enemy1.position.x<enemy2.position.x){
+            enemy1.body.velocity.x = -enemy1.myvelocity;
+            enemy2.body.velocity.x = enemy2.myvelocity;
+            this.changedirectionleft(enemy2);
+            this.changedirectionright(enemy1);
+        }
+        else if(enemy1.position.x>=enemy2.position.x){
+            enemy1.body.velocity.x = enemy1.myvelocity; 
+            enemy2.body.velocity.x = -enemy2.myvelocity;
+            this.changedirectionleft(enemy1);
+            this.changedirectionright(enemy2);
+        }
+        
     },
     
     enemymove: function(tomove, block){
-        if(tomove.body.blocked.right){tomove.body.velocity.x = -tomove.myvelocity;}
-        else if(tomove.body.blocked.left){tomove.body.velocity.x = tomove.myvelocity;}
+        if(tomove.body.blocked.right){tomove.body.velocity.x = -tomove.myvelocity; this.changedirectionright(tomove);}
+        else if(tomove.body.blocked.left){tomove.body.velocity.x = tomove.myvelocity; this.changedirectionleft(tomove);}
     },
     
     onOverlap: function(mario, movingTarget){
@@ -418,8 +435,8 @@ var playState = {
     
     onEnemyCollision: function(mario, enemy){
         if(mario.body.touching.down){
+            mario.body.touching.down = false;
             if(enemy.isGoomba){
-                mario.body.touching.down = false;
                 enemy.animations.stop();
                 enemy.frame = 21;
                 enemy.body.moves = false;
@@ -427,24 +444,57 @@ var playState = {
                 enemy.position.y = enemy.position.y+16;
                 this.pointtext(enemy.position.x,enemy.position.y,'100');
                 this.labels.updatescore(100);
-                mario.body.velocity.y = -400;
-                if(enemy.position.x+16>mario.position.x) {mario.body.velocity.x = -200;}
-                else{mario.body.velocity.x = 200;}
                 game.time.events.add(850, function () {
                     enemy.kill();
                     this.ricicla.add(enemy);
                 },this);
+            } else{
+                if(!enemy.attacked){
+                    enemy.attacked = true;
+                    enemy.animations.play('scudo');
+                    enemy.body.velocity.x = 0;
+                    enemy.myvelocity = 300;
+                    enemy.body.setSize(32,28);
+                    enemy.position.y += 20;
+                    enemy.timer = game.time.events.add(7950, function () {
+                        if(!enemy.isDead){
+                            enemy.attacked = false;
+                            enemy.myvelocity = 50;
+                            enemy.animations.play('walk');
+                            if(enemy.scale.x>0)
+                                enemy.body.velocity.x = -enemy.myvelocity;
+                            else enemy.body.velocity.x = enemy.myvelocity;
+                            enemy.position.y -= 20;
+                            enemy.body.setSize(32,48);
+                        }
+                    },this);
+                } else{
+                    this.tartadead(mario,enemy);
+                }
             }
+            mario.body.velocity.y = -400;
+            if(enemy.position.x+16>mario.position.x) {mario.body.velocity.x = -200;}
+            else{mario.body.velocity.x = 200;}
         } else{
-            this.stopgame();
-            this.supermario.standdead();
-            mario.body.checkCollision.none = true;
-            mario.body.checkCollision.down = false;
-            game.time.events.add(100, function () {
-                mario.body.moves = true;
-                mario.body.gravity.y = 1000;
-                mario.body.velocity.y = -450; 
-            },this);
+            if(enemy.attacked && !enemy.isDead){
+                mario.body.touching.down = false;
+                this.tartadead(mario,enemy);    
+            }else{
+                if(!enemy.attacked){
+                    if(enemy.position.x+16>mario.position.x){
+                        this.changedirectionright(enemy);
+                    } else this.changedirectionleft(enemy);
+                }
+                this.stopgame();
+                this.supermario.standdead();
+                mario.body.checkCollision.none = true;
+                mario.body.checkCollision.down = false;
+                enemy.timer = game.time.events.add(100, function () {
+                    mario.body.moves = true;
+                    mario.body.gravity.y = 1000;
+                    mario.body.velocity.y = -450; 
+                },this);
+            }
         }
     },
     
@@ -503,6 +553,8 @@ var playState = {
                 if(special.position.x<blocco.position.x+10 && special.body.velocity.x>0){
                     direction = -1;        
                 } else if(special.body.velocity.x<0) {direction = -1;}
+                this.pointtext(special.position.x,special.position.y,'100');
+                this.labels.updatescore(100);
                 this.todelete.add(special);
                 special.scale.setTo(1, -1);
                 special.anchor.setTo(0, 1);
@@ -517,7 +569,6 @@ var playState = {
         game.tweens.pauseAll();
         this.special.setAll('body.moves',false);
         this.enemy.setAll('body.moves',false);
-        this.special.setAll('animations.paused',true);
         this.enemy.setAll('animations.paused',true);
         this.countDown.pause();
         this.specialblock.forEach(function(blocco){
@@ -528,6 +579,7 @@ var playState = {
         this.mario.animations.stop();
         this.mario.body.velocity.x=0;
         this.stop = true;
+        this.mario.play = false;
     },
     
     resumegame: function(){
@@ -543,6 +595,22 @@ var playState = {
         this.stop = false;
         if(this.supermario.lastframe===4){this.mario.frame = 13;}
         this.countDown.resume();
+    },
+        
+    tartadead: function(mario, enemy){
+        enemy.isDead = true;
+        game.time.events.remove(enemy.timer);
+        enemy.timer = null;
+        this.pointtext(enemy.position.x,enemy.position.y,'500');
+        this.labels.updatescore(500);
+        enemy.animations.stop();
+        enemy.frame = 24;
+        enemy.myvelocity = 400;
+        console.log(enemy.position.x);
+        console.log(mario.position.x);
+        if(enemy.position.x+16 > mario.position.x ){
+            enemy.body.velocity.x = 400;
+        } else enemy.body.velocity.x = -400; 
     },
     
     //x,y serve per sapere il punto in cui dovrà apparire il label, 
@@ -570,6 +638,20 @@ var playState = {
             else if(oggettoda==6 && element.isTartaGoomba){return element}
         }
         return null;
+    },
+    
+    changedirectionright(object){
+        if(object.isTartaGoomba){
+            object.scale.x=1;
+            object.anchor.setTo(0, 0); 
+        }  
+    },
+    
+    changedirectionleft(object){
+        if(object.isTartaGoomba){
+            object.scale.x=-1;
+            object.anchor.setTo(1, 0);
+        }  
     },
     
     //funzione utilizzata per creare e reciclare gli oggetti già utilizzat
