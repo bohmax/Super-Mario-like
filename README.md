@@ -4,9 +4,7 @@ The code is in Javascript, To play you need to open the game with your computer 
 
 To Do
 End level
-mario animation interating with object while fury
-enemy interating with tirta while attacked
+mario fire while fury
+mario destroy wall while big
 
-Make mario run if I have time
-Make mario collide correctly
 mario not bug(animation) if i touch from left or right enemy
