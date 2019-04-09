@@ -6,5 +6,3 @@ To Do
 End level
 mario fire while fury
 mario destroy wall while big
-
-mario not bug(animation) if i touch from left or right enemy
