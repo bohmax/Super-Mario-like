@@ -44,6 +44,7 @@ var playState = {
         this.temp = game.add.group();
         this.tempenem = game.add.group();
         this.todelete = game.add.group();
+        this.toTween = game.add.group();
 
         this.specialblock.enableBody = true;
         this.discoveredblock.enableBody = true;
@@ -53,6 +54,7 @@ var playState = {
         this.temporaneo.enableBody = true;
         this.enemy.enableBody = true;
         this.temp.enableBody = true;
+        this.toTween.enableBody = true;
         game.world.sendToBack(this.temporaneo);
         game.world.bringToTop(this.special);
         game.world.bringToTop(this.mario);
@@ -106,6 +108,14 @@ var playState = {
 
     update: function() {
         this.mario.speed = this.mario.body.velocity.x;
+        this.toTween.forEach(function(item) {
+            var pos = item.padre.position;
+            item.position.x = pos.x;
+            item.position.y = pos.y;
+            //game.debug.body(item);
+        });
+
+
         if(this.special.length>0){
             game.physics.arcade.collide(this.special, this.map.layer,this.enemymove,null,this);
             game.physics.arcade.collide(this.special, this.specialblock,this.itemCollision,this.preventCollision,this);
@@ -132,7 +142,7 @@ var playState = {
         game.physics.arcade.collide(this.mario, this.block, this.onSpecialCollide,null,this);
         game.physics.arcade.collide(this.mario, this.discoveredblock);
         game.physics.arcade.collide(this.mario, this.map.layer);
-        game.physics.arcade.overlap(this.mario, this.temp,function(r,s){r.body.touching.up=true; r.body.velocity.y=50;},null,this);
+        game.physics.arcade.collide(this.mario, this.toTween);
         game.physics.arcade.overlap(this.todelete, this.extraobject, 
                                     function(r,s){console.log('delete from world');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
 
@@ -257,7 +267,6 @@ var playState = {
     onSpecialCollide: function(mario, specialblockitem) {
         if(mario.body.touching.up){
             var twen = this.collisionTween(specialblockitem);
-            twen.onComplete.add(function(r,s){r.isTweening=false; this.block.add(r);},this);
             if(specialblockitem.parent == this.specialblock && !specialblockitem.isTweening){
                 if(specialblockitem.coin>0){
                     this.labels.updatescore(200);
@@ -276,13 +285,20 @@ var playState = {
                     twen.onComplete.add(function(r,s){
                         r.isTweening=false;
                         if(r.coin==0){
-                            this.discoveredblock.add(r);
+                            this.discoveredblock.add(specialblockitem);
+                        } else{
+                            this.specialblock.add(specialblockitem);
+                            this.specialblock.children.sort(this.sortfunction);
                         }
-                        r.body.immovable = true;},this);
+                        r.body.immovable = true;
+                        console.log(r);
+                        this.removefromgroup(r);
+                    },this);
                 }
                 //genera il fungo o la stella
-                else if(specialblockitem.coin!=0){
+                else if(specialblockitem.coin<0){
                     specialblockitem.coin = 0;
+                    this.discoveredblock.add(specialblockitem);
                     if(specialblockitem.stella){twen.onComplete.add(this.callbackstella, this);}
                     else {twen.onComplete.add(this.callbackfungo, this);}
                 }
@@ -290,11 +306,18 @@ var playState = {
                     specialblockitem.animations.stop();
                     specialblockitem.frame = 7;
                 }
-            }   
+            } else{twen.onComplete.add(function(r,s){r.isTweening=false; if(r.coin==undefined)this.block.add(r); this.removefromgroup(specialblockitem);},this);}   
+            specialblockitem.isTweening = true;
+            if(specialblockitem.rect == null){
+                specialblockitem.rect = game.add.sprite(specialblockitem.position.x, specialblockitem.position.y, null);
+                this.toTween.add(specialblockitem.rect);
+                specialblockitem.rect.body.setSize(32, 32, 0, 0);
+                specialblockitem.rect.body.immovable = true;
+                specialblockitem.rect.padre = specialblockitem;
+            }
             twen.start();
             this.temp.add(specialblockitem);
             this.temp.children.sort(this.sortfunction);
-            specialblockitem.isTweening = true;
         }
     },
 
@@ -730,6 +753,12 @@ var playState = {
         enemy.anchor.setTo(0, 1);
         enemy.body.velocity.y=-550;
         enemy.body.velocity.x=150*direction;
+    },
+    
+    removefromgroup(item){
+        this.toTween.remove(item.rect);
+        item.rect.destroy();
+        item.rect = null;
     },
 
     binarysearch(arr, x,y, start, end) { 

@@ -172,13 +172,15 @@ class Mario{
     }
 
     stop(){
-        //console.log(this.mario.body.velocity.x);
-        if(this.mario.body.velocity.x > 0){this.mario.body.velocity.x -= 10;} 
-        else if(this.mario.body.velocity.x < 0){
-            if(this.mario.x < game.camera.x+Math.sign(this.mario.width)*this.mario.width){
-                this.mario.body.velocity.x = 0;
-            } 
-            else {this.mario.body.velocity.x += 10;}
+        if(Math.abs(this.mario.body.velocity.x) < 10){this.mario.body.velocity.x=0}
+        else{
+            if(this.mario.body.velocity.x > 0){this.mario.body.velocity.x -= 10;} 
+            else if(this.mario.body.velocity.x < 0){
+                if(this.mario.x < game.camera.x+Math.sign(this.mario.width)*this.mario.width){
+                    this.mario.body.velocity.x = 0;
+                } 
+                else {this.mario.body.velocity.x += 10;}
+            }
         }
         if(this.touchingdown() && this.mario.body.velocity.x === 0 && this.mario.body.velocity.y === 0 && this.mario.frame%7!=0){
             this.mario.animations.stop(); // Stop animations
