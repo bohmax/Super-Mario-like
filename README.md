@@ -4,5 +4,4 @@ The code is in Javascript, To play you need to open the game with your computer 
 
 To Do
 End level
-mario fire while fury
-mario destroy wall while big
+Add music
