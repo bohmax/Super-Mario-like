@@ -159,14 +159,22 @@
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":64},
 	"sourceSize": {"w":32,"h":64}
+},
+{
+	"filename": "21",
+	"frame": {"x":0,"y":544,"w":32,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":64},
+	"sourceSize": {"w":32,"h":64}
 }],
 "meta": {
 	"app": "https://www.codeandweb.com/texturepacker",
 	"version": "1.0",
 	"image": "mario_animation.png",
 	"format": "RGBA8888",
-	"size": {"w":64,"h":544},
+	"size": {"w":64,"h":608},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:647b2c6b8e98314640f1ad98446d3e72:ff5d10bc4dfe9a156c2c974e7345578b:76e184eef07936c7d257e654c036ae0e$"
+	"smartupdate": "$TexturePacker:SmartUpdate:6ff9778fe75226501b7044a2afe3c80e:bdb8236e5e9f8130fb04e4115f454728:76e184eef07936c7d257e654c036ae0e$"
 }
 }
