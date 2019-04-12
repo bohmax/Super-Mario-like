@@ -20,7 +20,9 @@ class Mario{
         this.firstjump = true;
         this.hastouchedup = false;
         this.isBigger = false;
+        this.isFury = false;
         this.mario.invincibile = false;
+        this.shot = true;
     }
 
     setPosition(width, height){
@@ -37,6 +39,7 @@ class Mario{
         this.mario.animations.add('walk', [1, 2, 3], 8, true);
         this.mario.animations.add('walkbig', [8, 9, 10], 8, true);
         this.mario.animations.add('walkfury', [15, 16, 17], 8, true);
+        this.mario.animations.add('spara', [14,20,14], 16, false);
         this.mario.play = false;
     }
 
@@ -182,11 +185,19 @@ class Mario{
                 else {this.mario.body.velocity.x += 10;}
             }
         }
-        if(this.touchingdown() && this.mario.body.velocity.x === 0 && this.mario.body.velocity.y === 0 && this.mario.frame%7!=0){
-            this.mario.animations.stop(); // Stop animations
+        if(this.touchingdown()){
+            if(this.mario.body.velocity.x === 0 && this.mario.body.velocity.y === 0 && this.mario.frame%7!=0 && !this.mario.time){
+                this.mario.animations.stop(); // Stop animations
+                this.mario.play = false;
+                // Change frame (stand still)
+                this.standstill();
+            }
+        } else if(this.mario.play){
+            this.mario.animations.stop();
             this.mario.play = false;
-            // Change frame (stand still)
-            this.standstill();
+            if(!this.isBigger){this.mario.frame = 2;} 
+            else if(!this.isFury){ this.mario.frame = 9;}
+            else this.mario.frame = 16;
         }
     }
 
@@ -225,6 +236,48 @@ class Mario{
 
     standdead(){
         this.mario.frame = 6;
+    }
+
+    spara(amb){
+        if(this.isFury && this.shot){
+            if(this.mario.frame === 14){
+                this.mario.time = true;
+                this.mario.animations.play('spara');
+                game.time.events.add(150, function () {
+                    this.mario.time = false;
+                },this);
+            }
+
+            this.shot = false;
+            game.time.events.add(500, function () {
+                this.shot = true;
+            },this);
+            var direction = 1;
+            var ball = null;
+            if(this.mario.scale.x === -1){
+                ball = amb.createobject(this.mario.position.x-32,this.mario.position.y-this.mario.height+16,7,'27');
+                direction = -1;
+            } else ball = amb.createobject(this.mario.position.x,this.mario.position.y-this.mario.height+16,7,'27');
+            if(!ball.isFuoco){
+                ball.isFuoco = true;
+                ball.myvelocity = 400;
+                ball.animations.add('spara', [27, 28, 29,30], 8, true);
+                var anim = ball.animations.add('esplodi', [31,32,33], 24, false);
+                anim.onComplete.add(function() {
+                    ball.kill();
+                    amb.ricicla.add(ball);
+                }, ball,amb);
+                game.physics.arcade.enable(ball);
+                ball.body.bounce.setTo(1,1);
+                ball.body.setSize(16,16);
+                ball.anchor.setTo(0, 1);
+            }
+            ball.scale.setTo(direction, 1);
+            ball.body.gravity.y = 1500;
+            amb.fireball.add(ball);
+            ball.body.velocity.x = ball.myvelocity * direction;
+            ball.animations.play('spara');
+        }
     }
 
     mariohalfbig(){
