@@ -19,8 +19,8 @@ class Mario{
         //servono per evitare salti ripetuti o movimenti insoliti
         this.firstjump = true;
         this.hastouchedup = false;
-        this.isBigger = false;
-        this.isFury = false;
+        this.isBigger = true;
+        this.isFury = true;
         this.mario.invincibile = false;
         this.shot = true;
     }
@@ -255,9 +255,9 @@ class Mario{
             var direction = 1;
             var ball = null;
             if(this.mario.scale.x === -1){
-                ball = amb.createobject(this.mario.position.x-32,this.mario.position.y-this.mario.height+16,7,'27');
+                ball = amb.createobject(this.mario.position.x-24,this.mario.position.y-this.mario.height+32,7,'27');
                 direction = -1;
-            } else ball = amb.createobject(this.mario.position.x,this.mario.position.y-this.mario.height+16,7,'27');
+            } else ball = amb.createobject(this.mario.position.x-8,this.mario.position.y-this.mario.height+32,7,'27');
             if(!ball.isFuoco){
                 ball.isFuoco = true;
                 ball.myvelocity = 400;
@@ -364,8 +364,6 @@ class Mario{
                             stop.resumegame();
                             if(enemy.position.x+16>this.mario.position.x && enemy.direction > 0) {enemy.direction = -1;}
                             else if(enemy.position.x<this.mario.position.x && enemy.direction < 0){enemy.direction = 1;}
-                            console.log(enemy.myvelocity);
-                            console.log(enemy.direction);
                             enemy.body.velocity.x = enemy.myvelocity * enemy.direction;
                         },this);
                     },this);

@@ -19,26 +19,6 @@
                 {
                  "gid":42,
                  "height":32,
-                 "id":99,
-                 "name":"",
-                 "properties":
-                    {
-                     "goomba":true
-                    },
-                 "propertytypes":
-                    {
-                     "goomba":"bool"
-                    },
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":672,
-                 "y":416
-                }, 
-                {
-                 "gid":42,
-                 "height":32,
                  "id":104,
                  "name":"",
                  "properties":
@@ -354,6 +334,26 @@
                  "visible":true,
                  "width":32,
                  "x":3456,
+                 "y":416
+                }, 
+                {
+                 "gid":42,
+                 "height":32,
+                 "id":128,
+                 "name":"",
+                 "properties":
+                    {
+                     "goomba":true
+                    },
+                 "propertytypes":
+                    {
+                     "goomba":"bool"
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":672,
                  "y":416
                 }],
          "opacity":1,
@@ -755,10 +755,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -775,10 +777,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -795,10 +799,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -815,10 +821,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -835,10 +843,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -855,10 +865,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -875,10 +887,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -895,10 +909,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -915,10 +931,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -935,10 +953,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -955,10 +975,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -975,10 +997,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -995,10 +1019,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1015,10 +1041,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1035,10 +1063,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1055,10 +1085,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1075,10 +1107,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1095,10 +1129,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1115,10 +1151,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1135,10 +1173,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1155,10 +1195,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1175,10 +1217,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1195,10 +1239,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1215,10 +1261,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1235,10 +1283,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1255,10 +1305,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1275,10 +1327,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1295,10 +1349,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1315,10 +1371,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1335,10 +1393,12 @@
                  "name":"",
                  "properties":
                     {
+                     "brake":true,
                      "object":true
                     },
                  "propertytypes":
                     {
+                     "brake":"bool",
                      "object":"bool"
                     },
                  "rotation":0,
@@ -1354,22 +1414,46 @@
          "width":224,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "height":15,
+         "name":"endgame",
+         "objects":[
+                {
+                 "gid":43,
+                 "height":32,
+                 "id":132,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":6720,
+                 "y":416
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "width":224,
+         "x":0,
+         "y":0
         }],
- "nextobjectid":124,
+ "nextobjectid":133,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tileheight":32,
  "tilesets":[
         {
-         "columns":42,
+         "columns":43,
          "firstgid":1,
          "image":"tileset.png",
          "imageheight":32,
-         "imagewidth":1344,
+         "imagewidth":1376,
          "margin":0,
          "name":"tileset",
          "spacing":0,
-         "tilecount":42,
+         "tilecount":43,
          "tileheight":32,
          "tilewidth":32
         }],
