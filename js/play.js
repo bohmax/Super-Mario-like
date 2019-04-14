@@ -77,9 +77,10 @@ var playState = {
         this.map.map.createFromObjects('Special', 5, 'animazione', 8, true, false, this.specialblock);
         this.specialblock.setAll('body.immovable', true);
         this.block.setAll('body.immovable', true);
+        
         this.queen = this.getqueen.getFirstAlive();
         game.physics.arcade.enable(this.queen);
-        this.queen.body.setSize(32,game.world.height);
+        this.queen.body.setSize(256,game.world.height,-256,-game.world.height+this.queen.height); 
 
         //per rendere i muri invisibili colpibili solo dal basso
         this.specialblock.forEach(function(blocco){
@@ -110,6 +111,8 @@ var playState = {
         var bottom = game.add.sprite(-32, game.height+32,null,0,this.extraobject);
         left.scale.y = -game.height-32;
         bottom.scale.x = game.width+96;
+        this.hit = false;
+        this.finito = false;
         this.extraobject.setAll('fixedToCamera', true);
 
         //animazioni nemici
@@ -119,6 +122,7 @@ var playState = {
     },
 
     update: function() {
+        //game.debug.body(this.queen);
         this.mario.speed = this.mario.body.velocity.x;
         this.toTween.forEach(function(item) {
             var pos = item.padre.position;
@@ -130,52 +134,59 @@ var playState = {
             item.angle += 1;
         });
 
-        if(this.special.length>0){
-            game.physics.arcade.collide(this.special, this.map.layer,this.enemymove,null,this);
-            game.physics.arcade.collide(this.special, this.specialblock,this.itemCollision,this.preventCollision,this);
-            game.physics.arcade.collide(this.special, this.block,this.itemCollision,this.preventCollision,this);
-            game.physics.arcade.collide(this.special, this.temp,this.itemCollision,this.preventCollision,this);
-            game.physics.arcade.collide(this.special, this.discoveredblock);
-            game.physics.arcade.overlap(this.mario, this.special, this.onOverlap,null,this);
-            game.physics.arcade.overlap(this.special, this.extraobject, 
-                function(r,s){console.log('delete from special');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
-        }
-        if(this.enemy.length>0){
-            game.physics.arcade.collide(this.enemy, this.map.layer,this.enemymove,null,this);
-            game.physics.arcade.collide(this.enemy, this.enemy,this.enemytouch,null,this);
-            game.physics.arcade.overlap(this.enemy, this.tempenem,this.enemytouch,null,this);
-            game.physics.arcade.collide(this.enemy, this.specialblock,this.itemCollision,this.preventCollision,this);
-            game.physics.arcade.collide(this.enemy, this.block,this.itemCollision,this.preventCollision,this);
-            game.physics.arcade.collide(this.enemy, this.temp,this.itemCollision,this.preventCollision,this);
-            game.physics.arcade.collide(this.enemy, this.discoveredblock);
-            game.physics.arcade.overlap(this.enemy, this.extraobject, 
-                function(r,s){console.log('delete from enemy');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
-            if(!this.hit){game.physics.arcade.collide(this.mario, this.enemy,this.onEnemyCollision,null,this);}
-        }
-        game.physics.arcade.collide(this.mario, this.specialblock, this.onSpecialCollide,null,this);
-        game.physics.arcade.collide(this.mario, this.block, this.onSpecialCollide,null,this);
-        game.physics.arcade.collide(this.mario, this.discoveredblock);
-        game.physics.arcade.collide(this.mario, this.map.layer);
-        game.physics.arcade.collide(this.mario, this.toTween);
-        game.physics.arcade.collide(this.mario, this.queen);
-        game.physics.arcade.overlap(this.todelete, this.extraobject, 
-            function(r,s){console.log('delete from world');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
+        //------------collisioni degli oggetti---------
+        game.physics.arcade.collide(this.special, this.map.layer,this.enemymove,null,this);
+        game.physics.arcade.collide(this.special, this.specialblock,this.itemCollision,this.preventCollision,this);
+        game.physics.arcade.collide(this.special, this.block,this.itemCollision,this.preventCollision,this);
+        game.physics.arcade.collide(this.special, this.temp,this.itemCollision,this.preventCollision,this);
+        game.physics.arcade.collide(this.special, this.discoveredblock);
+        game.physics.arcade.overlap(this.mario, this.special, this.onOverlap,null,this);
+        game.physics.arcade.overlap(this.special, this.extraobject, 
+                                    function(r,s){console.log('delete from special');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
+        //--------------------------------------------
+
+        //------------collisioni dei nemici ---------
+        game.physics.arcade.collide(this.enemy, this.map.layer,this.enemymove,null,this);
+        game.physics.arcade.collide(this.enemy, this.enemy,this.enemytouch,null,this);
+        game.physics.arcade.overlap(this.enemy, this.tempenem,this.enemytouch,null,this);
+        game.physics.arcade.collide(this.enemy, this.specialblock,this.itemCollision,this.preventCollision,this);
+        game.physics.arcade.collide(this.enemy, this.block,this.itemCollision,this.preventCollision,this);
+        game.physics.arcade.collide(this.enemy, this.temp,this.itemCollision,this.preventCollision,this);
+        game.physics.arcade.collide(this.enemy, this.discoveredblock);
+        game.physics.arcade.overlap(this.enemy, this.extraobject, 
+                                    function(r,s){console.log('delete from enemy');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
+        //--------------------------------------------
+
+        //------------collisioni fireball--------- 
         game.physics.arcade.collide(this.fireball, this.map.layer,this.firewithwall);
         game.physics.arcade.collide(this.fireball, this.block,this.firewithwall);
         game.physics.arcade.collide(this.fireball, this.discoveredblock,this.firewithwall);
         game.physics.arcade.collide(this.fireball, this.specialblock,this.firewithwall);
         game.physics.arcade.overlap(this.fireball, this.enemy,this.firewithenemy,null,this);
         game.physics.arcade.overlap(this.fireball, this.extraobject, 
-            function(r,s){console.log('delete from fire');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
+                                    function(r,s){console.log('delete from fire');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);                 
+        //--------------------------------------------
+        
+        //------------collisioni mario---------
+        game.physics.arcade.collide(this.mario, this.specialblock, this.onSpecialCollide,null,this);
+        game.physics.arcade.collide(this.mario, this.block, this.onSpecialCollide,null,this);
+        game.physics.arcade.collide(this.mario, this.discoveredblock);
+        game.physics.arcade.collide(this.mario, this.map.layer);
+        game.physics.arcade.collide(this.mario, this.toTween);
+        if(!this.hit){game.physics.arcade.collide(this.mario, this.enemy,this.onEnemyCollision,null,this);}
+        game.physics.arcade.overlap(this.mario, this.queen,this.endgame,null,this);
+        game.physics.arcade.overlap(this.todelete, this.extraobject, 
+                                    function(r,s){console.log('delete from world');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
+        //--------------------------------------------
 
         if(!this.stop){
             this.movePlayer();
             if(this.enemypoint.length>0)
                 this.enemySpawn();
+            this.labels.settime(this.countDown);
         }
         this.movecamera();
 
-        this.labels.settime(this.countDown);
         if(!this.mario.inWorld){
             this.playerDie();
         }
@@ -236,12 +247,18 @@ var playState = {
         game.time.events.remove(this.timer);
         this.timer = null;
         this.hit = false;
-        if(this.countDown.duration!=0){
-            game.global.life--;
+        if(this.finito){
+            console.log('hi')
+            this.finito = false;
+            game.state.start('menu');   
         } else{
-            game.global.life=-1; 
+            if(this.countDown.duration!=0){
+                game.global.life--;
+            } else{
+                game.global.life=-1; 
+            }
+            game.state.start('loadplay');
         }
-        game.state.start('loadplay');
     },
 
     enemySpawn: function(){
@@ -725,6 +742,8 @@ var playState = {
         this.special.setAll('body.moves',false);
         this.enemy.setAll('body.moves',false);
         this.enemy.setAll('animations.paused',true);
+        this.fireball.setAll('body.moves',false);
+        this.fireball.setAll('animations.paused',true);
         this.countDown.pause();
         this.specialblock.forEach(function(blocco){
             if(blocco.animations.name!=undefined)
@@ -743,6 +762,8 @@ var playState = {
         this.special.setAll('body.moves',true);
         this.enemy.setAll('body.moves',true);
         this.enemy.setAll('animations.paused',false);
+        this.fireball.setAll('body.moves',true);
+        this.fireball.setAll('animations.paused',false);
         this.specialblock.forEach(function(blocco){
             if(blocco.animations.name!=undefined)
                 blocco.animations.play('bling');
@@ -765,6 +786,50 @@ var playState = {
         if(enemy.position.x+16 > mario.position.x ){
             enemy.body.velocity.x = 400;
         } else enemy.body.velocity.x = -400; 
+    },
+    
+    endgame: function(mario, queen){
+        if(!this.finito){
+            game.tweens.pauseAll();
+            this.special.setAll('body.moves',false);
+            this.enemy.setAll('body.moves',false);
+            this.enemy.setAll('animations.paused',true);
+            this.fireball.setAll('body.moves',false);
+            this.fireball.setAll('animations.paused',true);
+            this.countDown.pause();
+            this.specialblock.forEach(function(blocco){
+            if(blocco.animations.name!=undefined)
+                blocco.animations.stop();
+            }, this);
+            this.finito = true;
+            this.stop = true;
+            this.punteggio = false;
+        } else{
+            if(queen.position.x-32>mario.position.x)
+                this.supermario.moveright();
+            else{
+                if(this.mario.body.velocity.x != 0)
+                    this.supermario.stop();
+                else if(!this.punteggio){//mario ha raggiunto la regina
+                    this.pointtext(queen.position.x,queen.position.y,500);
+                    this.labels.updatescore(500);
+                     var style = { font: '12px fontmario', fill: '#ffffff', wordWrap: true, wordWrapWidth: game.camera.width, align: "center" };
+                    var text = game.add.text(game.camera.x + game.camera.width / 2, game.camera.y + game.camera.height / 2, 'grazie cisternino per aver salvato me\nla principessa Gervasin', style);
+                    text.anchor.set(0.5);
+                    this.punteggio = true;
+                    this.timetoend = Math.round(this.countDown.duration / Phaser.Timer.SECOND);
+                } else if(this.timetoend > 0){
+                    this.timetoend--;
+                    this.labels.settimeend(this.timetoend);
+                    this.labels.updatescore(1);
+                } else{
+                    this.timetoend--;
+                    if(this.timetoend==-120)
+                        this.playerDie();
+                }
+                
+            }
+        }
     },
 
     //x,y serve per sapere il punto in cui dovrà apparire il label, 
@@ -823,7 +888,9 @@ var playState = {
 
     deleteenemy(enemy,second,speed){
         var direction = 1;
-        if(enemy.position.x<second.position.x){
+        var pos = second.position.x;
+        if(second == this.mario) pos = second.position.x-16;
+        if(enemy.position.x<pos){
             direction = -1;        
         }
         this.pointtext(enemy.position.x,enemy.position.y,'100');

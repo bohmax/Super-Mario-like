@@ -1423,7 +1423,7 @@
                 {
                  "gid":43,
                  "height":32,
-                 "id":132,
+                 "id":137,
                  "name":"",
                  "rotation":0,
                  "type":"",
@@ -1439,7 +1439,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":133,
+ "nextobjectid":138,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tileheight":32,

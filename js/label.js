@@ -56,4 +56,9 @@ class Label{
         this.timeLabel.text = 'time \n' + time.substr(time.length-this.texttime.length);
         
     };
+    
+    settimeend(countDown){
+        this.timeLabel.text = 'time \n' + countDown;
+        
+    };
 }

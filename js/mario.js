@@ -19,9 +19,9 @@ class Mario{
         //servono per evitare salti ripetuti o movimenti insoliti
         this.firstjump = true;
         this.hastouchedup = false;
-        this.isBigger = true;
-        this.isFury = true;
-        this.mario.invincibile = false;
+        this.isBigger = false;
+        this.isFury = false;
+        this.mario.invincibile = true;
         this.shot = true;
     }
 
@@ -33,6 +33,7 @@ class Mario{
     gravity(){
         game.physics.arcade.enable(this.mario);
         this.mario.body.gravity.y = 1600;
+        this.mario.body.setSize(26,32);
     }
 
     animation(){
@@ -65,7 +66,7 @@ class Mario{
             this.mario.body.velocity.x = 0;
         }
         if(this.touchingdown()){
-            //controllo fatto per capire se l'orientamento di marco è quello giusto
+            //controllo fatto per capire se l'orientamento di mario è quello giusto
             if(this.mario.scale.x>0){
                 this.mario.scale.setTo(-1, 1);
                 this.mario.anchor.setTo(0, 1);
