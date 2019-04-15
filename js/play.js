@@ -113,16 +113,39 @@ var playState = {
         bottom.scale.x = game.width+96;
         this.hit = false;
         this.finito = false;
+        this.end = false;
         this.extraobject.setAll('fixedToCamera', true);
-
-        //animazioni nemici
-        this.mario.animations.add('walk', [1, 2, 3], 8, true);
-        this.mario.animations.add('walkbig', [8, 9, 10], 8, true);
-        this.mario.animations.add('walkfury', [15, 16, 17], 8, true);
+        
+        //sound
+        this.sounds = game.add.audio('music');
+        this.musica = game.add.audio('music');
+        // Tell Phaser that it contains multiple sounds
+        this.sounds.allowMultiple = true;
+        // Split the audio. The last 2 paramters are:
+        // The start position and the duration of the sound 
+        this.sounds.addMarker('dead', 3.663, 2.682); 
+        this.sounds.addMarker('win', 6.345, 5.524);
+        this.sounds.addMarker('life', 11.864, 0.81);
+        this.sounds.addMarker('spacca', 12.692, 0.512);
+        this.sounds.addMarker('colpo_blocco', 13.220, 0.185);
+        this.sounds.addMarker('monetina', 13.405, 0.902);
+        this.sounds.addMarker('fireball', 14.333, 0.08);
+        this.sounds.addMarker('scalcia', 14.444, 0.149);
+        this.sounds.addMarker('power_up', 14.607, 0.924);
+        this.sounds.addMarker('uscita_power_up', 15.567, 0.555);
+        this.sounds.addMarker('jump', 16.130, 0.555);
+        this.sounds.addMarker('power_down', 47.573, 0.784);
+        this.sounds.addMarker('esplosione', 48.330, 0.391);
+        this.sounds.addMarker('timeout', 48.717, 2.823);
+        
+        this.musica.addMarker('canzone', 16.682, 30.891);
+        this.musica.play('canzone',0,0.5,true);
     },
 
     update: function() {
+        //game.debug.soundInfo(this.sounds);
         //game.debug.body(this.queen);
+        //game.debug.body(this.mario);
         this.mario.speed = this.mario.body.velocity.x;
         this.toTween.forEach(function(item) {
             var pos = item.padre.position;
@@ -184,11 +207,14 @@ var playState = {
             if(this.enemypoint.length>0)
                 this.enemySpawn();
             this.labels.settime(this.countDown);
-        }
+        } else if(this.end){this.playerDie();}
         this.movecamera();
 
         if(!this.mario.inWorld){
-            this.playerDie();
+            if(!this.mario.frame === 6){
+                this.musica.stop();
+                this.sounds.play('dead').onMarkerComplete.add(function(){this.end = true;},this);
+            }
         }
     },
 
@@ -217,7 +243,7 @@ var playState = {
                     this.mario.isjumping = false;
                     this.mario.firstjump = true;
                 }
-                this.release = this.supermario.jump();
+                this.release = this.supermario.jump(this);
             }
         }
         else if(!this.cursor.up.isDown){
@@ -247,8 +273,9 @@ var playState = {
         game.time.events.remove(this.timer);
         this.timer = null;
         this.hit = false;
+        this.musica.destroy();
+        this.sounds.destroy();
         if(this.finito){
-            console.log('hi')
             this.finito = false;
             game.state.start('menu');   
         } else{
@@ -311,6 +338,7 @@ var playState = {
         if(mario.body.touching.up){
             //spacca il muro se mario è grande
             if(this.supermario.isBigger && specialblockitem.brake && this.mario.body.touching.up){
+                this.sounds.play('spacca');
                 var start = specialblockitem.position.y;
                 var twen = game.add.tween(specialblockitem).to({y: start-8}, 50, Phaser.Easing.Linear.none);
                 twen.onComplete.add(function(specialblockitem,s){
@@ -344,6 +372,7 @@ var playState = {
                 this.temp.children.sort(this.sortfunction);
                 twen.start();
             } else{
+                this.sounds.play('colpo_blocco');
                 var twen = this.collisionTween(specialblockitem);
                 if(specialblockitem.parent == this.specialblock && !specialblockitem.isTweening){
                     if(specialblockitem.coin>0){
@@ -359,6 +388,7 @@ var playState = {
                         var tween = game.add.tween(coin1).to({y: coin1.position.y-(32*3)}, 250, Phaser.Easing.Linear.none).to({y:   coin1.position.y-16}, 175,Phaser.Easing.Linear.none);
                         tween.onComplete.add(this.callbackcoin, this);
                         tween.start();
+                        this.sounds.play('monetina');
                         specialblockitem.coin--;
                         twen.onComplete.add(function(r,s){
                             r.isTweening=false;
@@ -374,6 +404,7 @@ var playState = {
                     }
                     //genera il fungo o la stella
                     else if(specialblockitem.coin<0){
+                        this.sounds.play('uscita_power_up');
                         specialblockitem.coin = 0;
                         this.discoveredblock.add(specialblockitem);
                         if(specialblockitem.stella){twen.onComplete.add(this.callbackstella, this);}
@@ -485,7 +516,9 @@ var playState = {
     },
 
     timeout: function(){
-        this.playerDie();
+        this.stopgame();
+        this.musica.stop();
+        this.sounds.play('timeout').onMarkerComplete.add(function(){this.end = true;},this);
     },
 
     enemytouch: function(enemy1, enemy2){
@@ -554,8 +587,10 @@ var playState = {
         movingTarget.kill();
         this.ricicla.add(movingTarget);
         this.pointtext(movingTarget.position.x,movingTarget.position.y,movingTarget.scrivi);
-        if(!movingTarget.vita){this.labels.updatescore(1000);}
         if(!movingTarget.vita){
+            this.labels.updatescore(1000);
+            this.musica.pause();
+            this.sounds.play('power_up').onMarkerComplete.add(function(){this.musica.resume();},this);
             if(!movingTarget.isStella){
                 //animazione di gigantificazione di mario
                 if(movingTarget.isFungo && !this.supermario.isBigger){ this.stopgame(); this.supermario.biganimation(this);}
@@ -564,14 +599,22 @@ var playState = {
                     this.supermario.isFury = true;
                     this.supermario.standstill();
                     var twen = game.add.tween(this.mario).to( {tint: 0x656363}, 400,null,true, 0, 1, true);
-                    twen.onComplete.add(function(r,s){this.resumegame();},this);}
+                    twen.onComplete.add(function(r,s){
+                        if(!this.supermario.touchingdown()){
+                            this.supermario.fermo = false;
+                            this.mario.frame = 21;
+                    }
+                    this.resumegame();
+                    },this);}
             } else{
                 this.mario.invincibile = true;
+                mario.body.touching.up=false;
                 var twen = game.add.tween(this.mario).to( {tint: 0x656363}, 950,null,true, 0, 5, true);
                 twen.onComplete.add(function(r,s){this.mario.invincibile = false; this.resumegame();},this);
             }
         }
         else{
+            this.sounds.play('life');
             mario.body.touching.up=false;
             if(movingTarget.vita){game.global.life++;}
         }
@@ -580,6 +623,7 @@ var playState = {
     onEnemyCollision: function(mario, enemy){
         if(mario.body.touching.down){
             mario.body.touching.down = false;
+            this.sounds.play('scalcia');
             if(enemy.isGoomba){
                 enemy.animations.stop();
                 enemy.frame = 21;
@@ -621,11 +665,13 @@ var playState = {
             else{mario.body.velocity.x = 200;}
         } else{
             if(enemy.attacked && !enemy.isDead){
+                this.sounds.play('scalcia');
                 mario.body.touching.down = false;
                 this.tartadead(mario,enemy);
             }else{
                 if(!this.mario.invincibile){
                     if(!enemy.attacked){
+                        this.sounds.play('scalcia');
                         if(enemy.position.x+16>mario.position.x){
                             this.changedirectionright(enemy);
                         } else this.changedirectionleft(enemy);
@@ -635,12 +681,16 @@ var playState = {
                         this.supermario.standdead();
                         mario.body.checkCollision.none = true;
                         mario.body.checkCollision.down = false;
+                        this.musica.stop();
+                        this.sounds.play('dead').onMarkerComplete.add(function(){this.end = true;},this);
                         enemy.timer = game.time.events.add(100, function () {
                             mario.body.moves = true;
                             mario.body.gravity.y = 1000;
                             mario.body.velocity.y = -450; 
                         },this);
                     } else{
+                        this.musica.pause();
+                        this.sounds.play('power_down').onMarkerComplete.add(function(){this.musica.resume();},this);
                         this.hit = true;
                         this.stopgame();
                         this.supermario.smallanimation(this,enemy);
@@ -655,6 +705,7 @@ var playState = {
                         twe.start();
                     }
                 } else{
+                    this.sounds.play('scalcia');
                     this.deleteenemy(enemy,mario);
                     this.mario.body.velocity.x = this.mario.speed;
                 }
@@ -720,6 +771,7 @@ var playState = {
 
     firewithwall: function(fire, blocco){        
         if(!fire.body.touching.down && !fire.body.blocked.down){
+            this.sounds.play('esplosione');
             fire.body.gravity.y = 0;
             fire.body.velocity.x = 0;
             fire.body.velocity.y = 0;
@@ -727,7 +779,8 @@ var playState = {
         }
     },
 
-    firewithenemy: function(fire, enemy){        
+    firewithenemy: function(fire, enemy){
+        this.sounds.play('esplosione');
         this.deleteenemy(enemy,fire,350);
 
         fire.body.gravity.y = 0;
@@ -770,7 +823,6 @@ var playState = {
         }, this);
         this.mario.body.moves = true;
         this.stop = false;
-        if(this.supermario.lastframe===4){this.mario.frame = 13;}
         this.countDown.resume();
     },
 
@@ -801,6 +853,8 @@ var playState = {
             if(blocco.animations.name!=undefined)
                 blocco.animations.stop();
             }, this);
+            this.musica.stop();
+            this.sounds.play('win');
             this.finito = true;
             this.stop = true;
             this.punteggio = false;

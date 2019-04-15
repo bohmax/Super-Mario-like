@@ -8,6 +8,8 @@ var loadState = {
         game.load.image('logo', 'assets/logo.png');
         game.load.image('tileset', 'assets/tileset.png');
         
+        game.load.audio('music', ['assets/music.ogg', 'assets/music.mp3']);
+        
         game.global.style = { font: '15px fontmario', fill: '#ffffff', align: "center" };
     },
     
@@ -17,6 +19,6 @@ var loadState = {
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.renderer.renderSession.roundPixels = true;
         
-        game.state.start('play');
+        game.state.start('menu');
     }
 };

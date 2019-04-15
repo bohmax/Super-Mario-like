@@ -21,7 +21,7 @@ class Mario{
         this.hastouchedup = false;
         this.isBigger = false;
         this.isFury = false;
-        this.mario.invincibile = true;
+        this.mario.invincibile = false;
         this.shot = true;
     }
 
@@ -66,6 +66,7 @@ class Mario{
             this.mario.body.velocity.x = 0;
         }
         if(this.touchingdown()){
+            this.fermo = false;
             //controllo fatto per capire se l'orientamento di mario è quello giusto
             if(this.mario.scale.x>0){
                 this.mario.scale.setTo(-1, 1);
@@ -115,6 +116,7 @@ class Mario{
         }
         //gestisce l'animazione
         if(this.touchingdown()){
+            this.fermo = false;
             if(this.mario.scale.x<0){
                 this.mario.scale.setTo(1, 1);
                 this.mario.anchor.setTo(1, 1);
@@ -146,7 +148,7 @@ class Mario{
         }
     }
 
-    jump(){
+    jump(amb){
         // Move the player upward (jump)
         var pos = this.Ystart - this.mario.body.position.y;
         if(!this.mario.isjumping){
@@ -157,7 +159,7 @@ class Mario{
                     this.standjump();
                     this.firstjump = false;
                     this.hastouchedup = false;
-                    //setta la dimenensione del body
+                    amb.sounds.play('jump');
                 }
             } 
             else if(pos <= 112){
@@ -187,7 +189,7 @@ class Mario{
             }
         }
         if(this.touchingdown()){
-            if(this.mario.body.velocity.x === 0 && this.mario.body.velocity.y === 0 && this.mario.frame%7!=0 && !this.mario.time){
+            if(this.mario.body.velocity.x === 0 && this.mario.body.velocity.y === 0 && !this.fermo && !this.mario.time){
                 this.mario.animations.stop(); // Stop animations
                 this.mario.play = false;
                 // Change frame (stand still)
@@ -211,18 +213,19 @@ class Mario{
     }
 
     standstill(){
+        this.fermo = true;
         if(!this.isBigger){
             this.mario.body.setSize(26,32);
             this.mario.frame = 0;
         } else{
-            if(this.mario.scale.y===1)
-                this.mario.body.setSize(32,64);
+            this.mario.body.setSize(32,64);
             if(!this.isFury) this.mario.frame = 7;
-            else  this.mario.frame = 14;
+            else this.mario.frame = 14;
         }
     }
 
     standjump(){
+        this.fermo = false;
         this.mario.animations.stop();
         this.mario.play = false;
         if(!this.isBigger){
@@ -248,6 +251,8 @@ class Mario{
                     this.mario.time = false;
                 },this);
             }
+            
+            amb.sounds.play('fireball')
 
             this.shot = false;
             game.time.events.add(500, function () {
@@ -338,6 +343,11 @@ class Mario{
             game.time.events.add(time, function () {
                 this.bigmario();
                 game.time.events.add(time, function () {
+                    if(!this.touchingdown()){
+                        this.fermo = false;
+                        this.mario.body.setSize(32,64);
+                        this.mario.frame = 13;
+                    }
                     stop.resumegame();
                 },this);
             },this);  
@@ -362,6 +372,7 @@ class Mario{
                         game.time.events.add(time, function () {
                             this.isBigger = false;
                             this.isFury = false;
+                            this.mario.body.setSize(26,32);
                             stop.resumegame();
                             if(enemy.position.x+16>this.mario.position.x && enemy.direction > 0) {enemy.direction = -1;}
                             else if(enemy.position.x<this.mario.position.x && enemy.direction < 0){enemy.direction = 1;}
