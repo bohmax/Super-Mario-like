@@ -355,7 +355,7 @@ class Mario{
     }
 
     biganimation(stop){
-        var time = 150;
+        var time = 100;
         this.firstbigframe(time,stop);
     }
 
