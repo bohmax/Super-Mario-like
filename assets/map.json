@@ -731,7 +731,7 @@
                     },
                  "rotation":0,
                  "type":"",
-                 "visible":false,
+                 "visible":true,
                  "width":32,
                  "x":2048,
                  "y":288

@@ -79,6 +79,8 @@ var playState = {
         this.block.setAll('body.immovable', true);
 
         this.queen = this.getqueen.getFirstAlive();
+        this.queen.scale.y=1;
+        this.queen.position.y -= 16;
         game.physics.arcade.enable(this.queen);
         this.queen.body.setSize(256,game.world.height,-256,-game.world.height+this.queen.height); 
 
@@ -88,6 +90,7 @@ var playState = {
                 blocco.body.checkCollision.up = false;
                 blocco.body.checkCollision.left = false;
                 blocco.body.checkCollision.right = false;
+                //blocco.body.checkCollision.down = true;
             }
         }, this)
 
@@ -116,31 +119,36 @@ var playState = {
         this.end = false;
         this.uscito = false;
         this.extraobject.setAll('fixedToCamera', true);
-
+        
         //sound
+        var volumemusic = game.global.music;
+        if(game.global.rip_musica) volumemusic = 0;
+        var volumesound = game.global.sound;
+        if(game.global.rip_sound) volumesound = 0;
+        
         this.sounds = game.add.audio('music');
         this.musica = game.add.audio('music');
         // Tell Phaser that it contains multiple sounds
         this.sounds.allowMultiple = true;
         // Split the audio. The last 2 paramters are:
         // The start position and the duration of the sound 
-        this.sounds.addMarker('dead', 3.663, 2.682); 
-        this.sounds.addMarker('win', 6.345, 5.524);
-        this.sounds.addMarker('life', 11.864, 0.81);
-        this.sounds.addMarker('spacca', 12.692, 0.512);
-        this.sounds.addMarker('colpo_blocco', 13.220, 0.185);
-        this.sounds.addMarker('monetina', 13.405, 0.902);
-        this.sounds.addMarker('fireball', 14.333, 0.08);
-        this.sounds.addMarker('scalcia', 14.444, 0.149);
-        this.sounds.addMarker('power_up', 14.607, 0.924);
-        this.sounds.addMarker('uscita_power_up', 15.567, 0.555);
-        this.sounds.addMarker('jump', 16.130, 0.555);
-        this.sounds.addMarker('power_down', 47.573, 0.784);
-        this.sounds.addMarker('esplosione', 48.330, 0.391);
-        this.sounds.addMarker('timeout', 48.717, 2.823);
+        this.sounds.addMarker('dead', 3.663, 2.682,volumesound); 
+        this.sounds.addMarker('win', 6.345, 5.524,volumesound);
+        this.sounds.addMarker('life', 11.864, 0.81,volumesound);
+        this.sounds.addMarker('spacca', 12.692, 0.512,volumesound);
+        this.sounds.addMarker('colpo_blocco', 13.220, 0.185,volumesound);
+        this.sounds.addMarker('monetina', 13.405, 0.902,volumesound);
+        this.sounds.addMarker('fireball', 14.333, 0.08,volumesound);
+        this.sounds.addMarker('scalcia', 14.444, 0.149,volumesound);
+        this.sounds.addMarker('power_up', 14.607, 0.924,volumesound);
+        this.sounds.addMarker('uscita_power_up', 15.567, 0.555,volumesound);
+        this.sounds.addMarker('jump', 16.130, 0.555,volumesound);
+        this.sounds.addMarker('power_down', 47.573, 0.784,volumesound);
+        this.sounds.addMarker('esplosione', 48.330, 0.391,volumesound);
+        this.sounds.addMarker('timeout', 48.717, 2.823,volumesound);
 
         this.musica.addMarker('musica', 16.682, 28.739);
-        this.musica.play('musica',0,0.5,true);
+        this.musica.play('musica',0,volumemusic,true);
     },
 
     update: function() {
@@ -609,7 +617,7 @@ var playState = {
         if(!movingTarget.vita){
             this.labels.updatescore(1000);
             game.sound.pauseAll();
-            this.sounds.play('power_up').onMarkerComplete.add(function(){console.log('fsd');game.sound.resumeAll();},this);
+            this.sounds.play('power_up').onMarkerComplete.add(function(){game.sound.resumeAll();},this);
             if(!movingTarget.isStella){
                 //animazione di gigantificazione di mario
                 if(movingTarget.isFungo && !this.supermario.isBigger){ this.stopgame(); this.supermario.biganimation(this);}

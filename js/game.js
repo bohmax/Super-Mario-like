@@ -9,11 +9,16 @@ game.global = {
     collectedcoin: 0,
     life: 3,
     style: null,
+    sound: 1,
+    music: 0.5,
+    rip_musica: false,
+    rip_sound: false
 };
 
 // And we tell Phaser to add and start our 'main' state
 game.state.add('load', loadState);
 game.state.add('menu', menuState);
+game.state.add('impostazioni', impostazioniState);
 game.state.add('loadplay', loadplayState);
 game.state.add('play', playState);
 

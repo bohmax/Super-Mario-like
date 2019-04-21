@@ -18,40 +18,47 @@ var menuState = {
         } else {bestscore = game.global.textbestscore;}
         
         this.sprite = game.add.sprite(game.width/2, 150, 'logo');
-        var connectLabel = game.add.text(game.width/2, game.height/2+40, 'PLEASE CONNECT THE CONTROLLER', game.global.style);
-        var topscareLabel = game.add.text(game.width/2, game.height/2+90, 'top- ' + bestscore, game.global.style);
+        var topscareLabel = game.add.text(game.width/2, game.height/2+160, 'top- ' + bestscore, game.global.style)
+        var arr=[
+            play = game.add.text(game.width/2, game.height/2+40, 'PLAY THE GAME', game.global.style),
+            edit = game.add.text(game.width/2, game.height/2+80, 'EDIT A LEVEL', game.global.style),
+            settings = game.add.text(game.width/2, game.height/2+120, 'SETTINGS', game.global.style),
+        ];
         
         topscareLabel.anchor.setTo(0.5, 0.5);
-        connectLabel.anchor.setTo(0.5, 0.5);
         this.sprite.anchor.setTo(0.5, 0.5);
         
+        arr.forEach(function(item){
+            item.anchor.setTo(0.5, 0.5);
+            item.inputEnabled = true;
+            item.events.onInputOver.add(this.over, this);
+            item.events.onInputOut.add(this.out, this);
+            item.events.onInputDown.add(this.start, this);
+        },this);
+        
+        play.level = 'loadplay';
+        settings.level = 'impostazioni';
+        
+        
         this.supermario = new Mario(this.map);
-        
-        
-        //and gravity
-        this.supermario.gravity();
-        
-        //this.cursor = game.input.keyboard.addKeyCapture([Phaser.Keyboard.UP, Phaser.Keyboard.DOWN,Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT]);
-        this.cursor = game.input.keyboard.createCursorKeys();
         
         game.global.life = 3;
         game.global.score = 0;
         game.global.collectedcoin = 0;
     },
         
-    update: function () {
-        // This function is called 60 times per second 
-        // It contains the game's logic
-        game.physics.arcade.collide(this.supermario.mario, this.map.layer); 
-        if (this.cursor.left.isDown){
-            this.start();
-        }
-        
+
+    
+    over: function(scritta){
+        game.add.tween(scritta).to({fontSize: 30}, 100).start();    
     },
     
+    out: function(scritta){
+        game.add.tween(scritta).to({fontSize: 15}, 100).start();
+    },
     
-    start: function() {
+    start: function(scritta) {
         // loading the game 
-        game.state.start('loadplay');
+        game.state.start(scritta.level);
     }
 };
