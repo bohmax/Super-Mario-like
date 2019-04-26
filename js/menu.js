@@ -1,4 +1,3 @@
-// We create our only state
 var menuState = {    
     
     create: function () {
@@ -38,6 +37,7 @@ var menuState = {
         
         play.level = 'loadplay';
         settings.level = 'impostazioni';
+        edit.level = 'editor';
         
         
         this.supermario = new Mario(this.map);

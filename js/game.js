@@ -19,6 +19,7 @@ game.global = {
 game.state.add('load', loadState);
 game.state.add('menu', menuState);
 game.state.add('impostazioni', impostazioniState);
+game.state.add('editor', editorState);
 game.state.add('loadplay', loadplayState);
 game.state.add('play', playState);
 

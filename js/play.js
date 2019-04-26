@@ -149,9 +149,12 @@ var playState = {
 
         this.musica.addMarker('musica', 16.682, 28.739);
         this.musica.play('musica',0,volumemusic,true);
+        game.time.advancedTiming = true;
+
     },
 
     update: function() {
+        //game.debug.text(game.time.fps, 2, 14, "#00ff00");
         //game.debug.soundInfo(this.sounds);
         //game.debug.body(this.queen);
         //game.debug.body(this.mario);
@@ -287,6 +290,20 @@ var playState = {
         this.hit = false;
         this.musica.destroy();
         this.sounds.destroy();
+        this.specialblock.destroy();        
+        this.discoveredblock.destroy();
+        this.block.destroy();        
+        this.extraobject.destroy();        
+        this.special.destroy();       
+        this.enemy.destroy();       
+        this.ricicla.destroy();
+        this.fireball.destroy();
+        this.rotate.destroy();        
+        this.temp.destroy();      
+        this.temporaneo.destroy();
+        this.todelete.destroy();
+        this.toTween.destroy();        
+        this.getqueen.destroy();        
         if(this.finito){
             this.finito = false;
             game.state.start('menu');   
