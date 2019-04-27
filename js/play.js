@@ -121,8 +121,8 @@ var playState = {
         this.extraobject.setAll('fixedToCamera', true);
         
         //sound
-        var volumemusic = game.global.music;
-        if(game.global.rip_musica) volumemusic = 0;
+        this.volumemusic = game.global.music;
+        if(game.global.rip_musica) this.volumemusic = 0;
         var volumesound = game.global.sound;
         if(game.global.rip_sound) volumesound = 0;
         
@@ -146,9 +146,14 @@ var playState = {
         this.sounds.addMarker('power_down', 47.573, 0.784,volumesound);
         this.sounds.addMarker('esplosione', 48.330, 0.391,volumesound);
         this.sounds.addMarker('timeout', 48.717, 2.823,volumesound);
+        this.sounds.addMarker('starpower', 48.717, 2.823,volumesound);
 
-        this.musica.addMarker('musica', 16.682, 28.739);
-        this.musica.play('musica',0,volumemusic,true);
+        this.musica.addMarker('musica', 16.682, 5.739,volumesound,true);
+        this.musica.addMarker('musica_power_up', 14.607, 0.924,volumesound,false);
+        this.musica.addMarker('musica_underground', 51.540, 13.997);
+        this.musica.addMarker('musica_invincibile', 65.537, 9.491,volumesound,false);
+        this.musica.play('musica');
+        
         game.time.advancedTiming = true;
 
     },
@@ -633,9 +638,8 @@ var playState = {
         this.pointtext(movingTarget.position.x,movingTarget.position.y,movingTarget.scrivi);
         if(!movingTarget.vita){
             this.labels.updatescore(1000);
-            game.sound.pauseAll();
-            this.sounds.play('power_up').onMarkerComplete.add(function(){game.sound.resumeAll();},this);
             if(!movingTarget.isStella){
+                this.sounds.play('power_up');
                 //animazione di gigantificazione di mario
                 if(movingTarget.isFungo && !this.supermario.isBigger){ this.stopgame(); this.supermario.biganimation(this);}
                 else if(movingTarget.isPianta && this.supermario.isBigger && !this.supermario.isFury){
@@ -651,10 +655,23 @@ var playState = {
                         this.resumegame();
                     },this);}
             } else{
-                this.mario.invincibile = true;
-                mario.body.touching.up=false;
-                var twen = game.add.tween(this.mario).to( {tint: 0x656363}, 950,null,true, 0, 5, true);
-                twen.onComplete.add(function(r,s){this.mario.invincibile = false; this.resumegame();},this);
+                if(!this.mario.invincibile){
+                    this.mario.invincibile = true;
+                    mario.body.touching.up=false;
+                    var twen = game.add.tween(this.mario).to( {tint: 0x656363}, 850,null,true, 0, 5, true);
+                    twen.onComplete.add(function(r,s){
+                        this.mario.invincibile = false;
+                        this.musica.stop();
+                    },this);
+                    this.musica.play('musica_power_up').onStop.addOnce(function(){ 
+                        console.log('hi');
+                        this.musica.play('musica_invincibile').onStop.addOnce(
+                        function(){ 
+                            console.log('hello');
+                            this.musica.play('musica');
+                        },this);
+                    },this);
+                }
             }
         }
         else{

@@ -33,7 +33,7 @@ var editorState = {
         game.world.width = game.world.width*2;
         
         //orizzontale
-        for(var i=12; i<29; i++){
+        for(var i=13; i<29; i++){
             this.griglia.moveTo(0,i*16);
             this.griglia.lineTo(game.world.width,i*16);
         }
@@ -41,7 +41,7 @@ var editorState = {
         //verticale
         for(var i=1; i<60; i++){
             this.griglia.moveTo(i*16,448);
-            this.griglia.lineTo(i*16,192);
+            this.griglia.lineTo(i*16,208);
         }
         
         return this.griglia;
