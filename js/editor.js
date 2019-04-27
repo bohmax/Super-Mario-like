@@ -30,16 +30,16 @@ var editorState = {
         this.griglia = game.add.graphics(0,0);
         this.griglia.lineStyle(1, 0x000000, 0.5);
         
-        game.world.width = game.world.width*2;
+        var larghezza = 499*16;
         
         //orizzontale
         for(var i=13; i<29; i++){
             this.griglia.moveTo(0,i*16);
-            this.griglia.lineTo(game.world.width,i*16);
+            this.griglia.lineTo(larghezza,i*16);
         }
 
         //verticale
-        for(var i=1; i<60; i++){
+        for(var i=1; i<500; i++){
             this.griglia.moveTo(i*16,448);
             this.griglia.lineTo(i*16,208);
         }
@@ -73,7 +73,7 @@ var editorState = {
         minRangeHandle.events.onDragUpdate.add(function(obj,pointer,x){
             if (x>460) x = 460;
             else if(x<0) x = 0;
-            x += x/23; //costante per la quale riesco a raggiungere i 480
+            x = (this.griglia.width-game.world.width)*x/460; //costante per la quale riesco a raggiungere i 480
             this.disegno.x = -x;
         }, this);
         
@@ -103,17 +103,23 @@ var editorState = {
     },
     
     updateMarker: function() {
-        
-        var x = parseInt(game.input.mousePointer.x/16);
+        //differenza dall'inizio della camera
+        var diff = ((this.disegno.x*-1)%16);
+        var x = parseInt((game.input.mousePointer.x+diff)/16);
         var y = parseInt(game.input.mousePointer.y/16);
-        
-        console.log(y);
-        
-            this.marker.x = x * 16;
+    
+        if(y>=13 && y<=27){
+            
+            this.marker.x = (x * 16) - diff;
             this.marker.y = y * 16;
             if(!this.marker.visible){
                 this.marker.visible = true; 
             }
+        }
+        else{
+            this.marker.visible = false; 
+        }
+        console.log('numero quadrato' + (parseInt((this.disegno.x*-1)/16+parseInt((game.input.mousePointer.x)/16))));
     },
     
     quit: function() {
