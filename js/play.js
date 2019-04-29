@@ -148,7 +148,7 @@ var playState = {
         this.sounds.addMarker('timeout', 48.717, 2.823,volumesound);
         this.sounds.addMarker('starpower', 48.717, 2.823,volumesound);
 
-        this.musica.addMarker('musica', 16.682, 5.739,volumesound,true);
+        this.musica.addMarker('musica', 16.682, 28.739,volumesound,true);
         this.musica.addMarker('musica_power_up', 14.607, 0.924,volumesound,false);
         this.musica.addMarker('musica_underground', 51.540, 13.997);
         this.musica.addMarker('musica_invincibile', 65.537, 9.491,volumesound,false);
@@ -664,12 +664,8 @@ var playState = {
                         this.musica.stop();
                     },this);
                     this.musica.play('musica_power_up').onStop.addOnce(function(){ 
-                        console.log('hi');
                         this.musica.play('musica_invincibile').onStop.addOnce(
-                        function(){ 
-                            console.log('hello');
-                            this.musica.play('musica');
-                        },this);
+                        function(){this.musica.play('musica');},this);
                     },this);
                 }
             }

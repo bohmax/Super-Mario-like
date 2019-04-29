@@ -5,20 +5,25 @@ var editorState = {
         
         this.disegno = game.add.group();
         this.oggetti = game.add.group();
+        this.bottoni = game.add.group();
         
         this.disegno.add(this.drawGrid());
         
         this.drawObject();
         
+        this.scroll = this.drawscrollbar(11,459,0);
         
+        var help = this.drawHelp();
         
-        
-        this.scrollbar(11,459,0);
+        this.bottoni.add(this.drawButton(10,this.griglia.starty-35,'HELP',this.help)).menu = help;
+        this.bottoni.add(this.drawButton(game.camera.width/2-150/2,this.griglia.starty-35,'INDIETRO',this.quit));
+        this.bottoni.add(this.drawButton(game.camera.width-115,this.griglia.starty-35,'GIOCA',this.quit));
         
         //marcatore di disegno
         this.marker = game.add.graphics();
         this.marker.lineStyle(2, 0xffffff, 1);
         this.marker.drawRect(0, 0, 16, 16);
+        this.marker.visible = false; 
         
         //rileva movimenti e click mouse
         game.input.addMoveCallback(this.updateMarker, this);
@@ -31,6 +36,8 @@ var editorState = {
         this.griglia.lineStyle(1, 0x000000, 0.5);
         
         var larghezza = 499*16;
+        this.griglia.starty = 208;
+        this.griglia.endy = 448;
         
         //orizzontale
         for(var i=13; i<29; i++){
@@ -40,8 +47,8 @@ var editorState = {
 
         //verticale
         for(var i=1; i<500; i++){
-            this.griglia.moveTo(i*16,448);
-            this.griglia.lineTo(i*16,208);
+            this.griglia.moveTo(i*16,this.griglia.endy);
+            this.griglia.lineTo(i*16,this.griglia.starty);
         }
         
         return this.griglia;
@@ -53,12 +60,35 @@ var editorState = {
         var sfondo = game.add.text(special.position.x + special.width+15, 0, 'SFONDO', game.global.style);
         var personaggi = game.add.text(sfondo.position.x + sfondo.width+15, 0, 'ABITANTI', game.global.style);
         
-        var terra = game.add.sprite(0, terrain.height-4,'tileset',4);
-        terra.scale.setTo(0.5,0.5);
+        var y = terrain.height-4;
+        var terra = game.add.sprite(0, y,'tileset',4);
+        //var 
+        //terra.scale.setTo(0.5,0.5);
         
     },
     
-    scrollbar: function(posx,posy,percentuale){
+    drawButton: function(x,y,text,fun){
+        var grafica = game.add.graphics(0, 0);
+        var widht;
+        if(text.length*15>80) widht = text.length*15+30;
+        else widht = 100;
+        var rect = this.drawRectangle(grafica, x, y, widht ,30, 1, 0x000000, 1, 0xa83fff, 1,7);
+        grafica.addChild(rect);
+        buttonText = game.add.text(x + rect.width / 2, y + rect.height / 2, text, game.global.style);
+        buttonText.smoothed = true;
+        buttonText.anchor.setTo(0.5,0.4);
+        grafica.addChild(buttonText);
+        grafica.inputEnabled = true;
+        grafica.events.onInputOver.add(function(edit){edit.getChildAt(1).addColor('#ffff00', 0);}, this);
+        grafica.events.onInputOut.add(function(edit){edit.getChildAt(1).addColor('#ffffff', 0);}, this);
+        grafica.events.onInputOut.add(function(edit){edit.getChildAt(1).addColor('#ffffff', 0);}, this);
+        if(fun!=undefined)
+            grafica.events.onInputDown.add(fun, this);
+        
+        return grafica;
+    },
+    
+    drawscrollbar: function(posx,posy,percentuale){
         var minRangeHandle = game.add.graphics(0, 0);
         var rect = this.drawRectangle(minRangeHandle, posx, posy, 460,20, 0.5, 0x000000, 0.5, 0x4c78e8, 1,7);
         var circle = this.drawCircle(minRangeHandle, posx, posy+10, 20, 0.5, 0x000000, 0.5, 0xffffff, 1);
@@ -102,6 +132,16 @@ var editorState = {
         return circle;
     },
     
+    drawHelp(){
+        var grafica = game.add.graphics(0, 0);
+        var rect = this.drawRectangle(grafica, 10, 10, game.camera.width-20,game.camera.height-20, 3, 0x000000, 1, 0x4c78e8, 0.5,7);
+        grafica.addChild(rect);
+        grafica.bottone = grafica.addChild(this.drawButton(rect.x + (game.camera.width-20)/2-60,(game.camera.height-20-30),'INDIETRO',this.indietro));
+        grafica.alpha = 0;
+        grafica.bottone.input.enabled = false;
+        return grafica;
+    },
+    
     updateMarker: function() {
         //differenza dall'inizio della camera
         var diff = ((this.disegno.x*-1)%16);
@@ -119,12 +159,43 @@ var editorState = {
         else{
             this.marker.visible = false; 
         }
-        console.log('numero quadrato' + (parseInt((this.disegno.x*-1)/16+parseInt((game.input.mousePointer.x)/16))));
+        //console.log('numero quadrato' + (parseInt((this.disegno.x*-1)/16+parseInt((game.input.mousePointer.x)/16))));
     },
     
-    quit: function() {
-        this.disegno.destroy();
-        this.oggetti.destroy();
+    help: function(but) {
+        //disabilita input
+        this.bottoni.forEach(function(item){
+            item.input.enabled = false;
+        });
+        
+        game.input.deleteMoveCallback(this.updateMarker, this);
+        this.scroll.input.enabled = false;
+        
+        but.menu.alpha = 1;
+        but.menu.bottone.input.enabled = true;
+        but.getChildAt(1).addColor('#ffffff');
+        
+    },
+    
+    indietro: function(but) {
+        //abilita input
+        this.bottoni.forEach(function(item){
+            item.input.enabled = true;
+        });
+        
+        game.input.addMoveCallback(this.updateMarker, this);
+        this.scroll.input.enabled = true;
+        
+        but.parent.alpha = 0;
+        but.input.enabled = false;
+        
+    },
+    
+    quit: function(but) {
+        this.disegno.destroy(true);
+        this.oggetti.destroy(true);
+        this.bottoni.destroy(true);
+        game.state.start('menu');
     },
 
 };

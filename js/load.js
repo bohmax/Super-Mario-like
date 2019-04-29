@@ -37,6 +37,6 @@ var loadState = {
 
         
         
-        game.state.start('menu');
+        game.state.start('editor');
     }
 };
