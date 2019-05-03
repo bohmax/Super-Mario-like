@@ -237,29 +237,35 @@ var editorState = {
         
         if(ycoo>=this.griglia.starty && ycoo<=this.griglia.endy){
 
-            if(this.objdrag!=null && !this.objdrag.isTweening){
+            if(this.objdrag!=null && this.objdrag.firsttouch){
                 
-                if(!this.objdrag.notResize){
-                    game.add.tween(this.objdrag.scale).to({ x: 0.5, y: 0.5},500,null,true);
+                if(!this.objdrag.notResize && !this.objdrag.isTweening){
                     this.drawMarker(this.marker,this.objdrag.arr[0]*0.5,this.objdrag.arr[1]*0.5,(this.objdrag.arr[2]-this.objdrag.arr[0]+this.objdrag.width)*0.5,(this.objdrag.arr[3]-this.objdrag.arr[1]+this.objdrag.height)*0.5,0xffffff,0.5);
+                    game.add.tween(this.objdrag.scale).to({ x: 0.5, y: 0.5},500,null,true);
+                    this.objdrag.isTweening = true;
                 }
                 else{
                     this.drawMarker(this.marker,this.objdrag.arr[0]*0.5,this.objdrag.arr[1]*0.5,((this.objdrag.arr[2]-this.objdrag.arr[0])*0.5+this.objdrag.width),((this.objdrag.arr[3]-this.objdrag.arr[1])*0.5+this.objdrag.height),0xffffff,0.5);
                 }
                 
-                
-                
-                this.objdrag.isTweening = true;
+                //indica che l oggetto è entrato nella tabella
                 this.objdrag.outposition = false;
+                this.objdrag.firsttouch = false;
             }
             
-            //differenza dall'inizio della camera
-            var diff = ((this.disegno.x*-1)%16);
-            var x = parseInt((xcoo+diff)/16);
-            var y = parseInt(ycoo/16);
+            if(this.marker.spriteOver==null){
+                //differenza dall'inizio della camera
+                var diff = ((this.disegno.x*-1)%16);
+                var x = parseInt((xcoo+diff)/16);
+                var y = parseInt(ycoo/16);
 
-            this.marker.x = (x * 16) - diff;
-            this.marker.y = y * 16;
+                this.marker.x = (x * 16) - diff;
+                this.marker.y = y * 16;
+            }
+            else{
+                this.marker.x = this.marker.spriteOver.position.x;
+                this.marker.y = this.marker.spriteOver.position.y;
+            }
             this.marker.visible = true;
             this.marker.keep = false;
         }
@@ -283,6 +289,7 @@ var editorState = {
         this.marker.y = sprite.position.y;
         this.marker.visible = true;
         this.marker.keep = true;
+        this.marker.spriteOver = sprite;
     },
 
     enableSpriteInput: function(sprite){
@@ -293,7 +300,7 @@ var editorState = {
             this.drawMarker(this.marker,0,0,16,16);
             this.marker.visible = false;
             this.marker.keep = false;
-            
+            this.marker.spriteOver = null;
         }, this);
         //sprite.events.onInputOut.add(function(edit){edit.getChildAt(1).addColor('#ffffff', 0);}, this);
         return sprite;
@@ -347,12 +354,15 @@ var editorState = {
     
     draggstart: function(obj,pointer,x,y){
         this.objdrag = obj;
-        if(obj.outposition)
-            this.marker.visible = false;
         this.marker.clear();
         this.drawMarker(this.marker,0,0,16,16,0xf4e842);
+        if(!obj.outposition)
+            this.marker.visible = true;
         game.world.bringToTop(obj);
         game.world.bringToTop(this.marker);
+        obj.firsttouch = true;
+        this.marker.spriteOver = null;
+        this.Markerfunction(null, game.input.x,game.input.y);
     },
     
     draggsend: function(obj,pointer,x,y){
@@ -372,9 +382,15 @@ var editorState = {
         else{
             obj.position.x = this.marker.x;
             obj.position.y = this.marker.y;
-            this.marker.clear();
-            this.drawMarker(this.marker,0,0,16,16,0xf4e842);
+            if(game.input.x>=(obj.position.x+obj.arr[0]*obj.scale.x) && game.input.x<=(obj.position.x+obj.arr[2]*obj.scale.x+obj.width)
+                      && game.input.y>=(obj.position.y+obj.arr[1]*obj.scale.y) && game.input.y<=(obj.position.y+obj.arr[3]*obj.scale.y)+obj.height)
+                        this.spriteOver(obj);
+            else{
+                this.marker.clear();
+                this.drawMarker(this.marker,0,0,16,16,0xf4e842);
+            }
         }
+        obj.firsttouch = false;
     },
 
     minmax(arr){
