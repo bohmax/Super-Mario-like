@@ -59,50 +59,48 @@ var editorState = {
 
         //terreno
         var y = terrain.height;
-        var terra = this.enableSpriteInput(game.add.sprite(10, y + 16,'tileset',5));
-        var scalini = this.enableSpriteInput(game.add.sprite(15+terra.width, terra.position.y,'tileset',6));
-        var fine = this.enableSpriteInput(game.add.sprite(10, terra.position.y+terra.height+10,'tileset',37));
+        var terra = game.add.sprite(10, y + 16,'tileset',5);
+        var scalini = game.add.sprite(15+terra.width, terra.position.y,'tileset',6);
+        var fine = game.add.sprite(10, terra.position.y+terra.height+10,'tileset',37);
         fine.addChild(game.add.sprite(32,0,'tileset',38));
-        var tubo = this.enableSpriteInput(game.add.sprite(10, fine.height+fine.position.y+10,'tileset',40));
+        var tubo = game.add.sprite(10, fine.height+fine.position.y+10,'tileset',40);
         tubo.addChild(game.add.sprite(fine.width,0,'tileset',39));
 
 
         //speciali
         var x = special.position.x;
-        var fungo = this.enableSpriteInput(game.add.sprite(10 + x, y+5,'animazione',9));
-        var vita = this.enableSpriteInput(game.add.sprite(15 + x + fungo.width, fungo.position.y,'animazione',10));
-        var money = this.enableSpriteInput(game.add.sprite(5 + vita.position.x + vita.width, fungo.position.y,'animazione',0));
-        var star = this.enableSpriteInput(game.add.sprite(fungo.position.x+15, fungo.position.y+fungo.height+5,'animazione',15));
-        var moneyx12 = this.enableSpriteInput(game.add.sprite(star.position.x+5+star.width , fungo.position.y+fungo.height+5,'animazione',0));
+        var fungo = game.add.sprite(10 + x, y+5,'animazione',9);
+        var vita = game.add.sprite(15 + x + fungo.width, fungo.position.y,'animazione',10);
+        var money = game.add.sprite(5 + vita.position.x + vita.width, fungo.position.y,'animazione',0);
+        var star = game.add.sprite(fungo.position.x+15, fungo.position.y+fungo.height+5,'animazione',15);
+        var moneyx12 = game.add.sprite(star.position.x+5+star.width , fungo.position.y+fungo.height+5,'animazione',0);
         var x12 = game.add.text(moneyx12.width/2, moneyx12.height/2, 'X12', game.global.style);
         x12.fontSize = 10; x12.anchor.setTo(0.5,0.3);
         moneyx12.addChild(x12);
-        var ground_money = this.enableSpriteInput(game.add.sprite(star.position.x+5+star.width, moneyx12.position.y+star.height+5,'animazione',0));
-        var block = this.enableSpriteInput(game.add.sprite(fungo.position.x+15, moneyx12.position.y+star.height+5,'tileset',4));
-        var tubo_special = this.enableSpriteInput(game.add.sprite(block.position.x, block.position.y+block.height+5,'tileset',37));
-        tubo_special.addChild(game.add.sprite(tubo_special.width,0,'tileset',38));
-
-        //sfondo
+        var ground_money = game.add.sprite(star.position.x+5+star.width, moneyx12.position.y+star.height+5,'animazione',0);
+        var block = game.add.sprite(fungo.position.x+15, moneyx12.position.y+star.height+5,'tileset',4);
+        var tubo_special = game.add.sprite(block.position.x, block.position.y+block.height+5,'tileset',37);
+        tubo_special.addChild(game.add.sprite(tubo_special.width,0,'tileset',38));     
         x = sfondo.position.x;
         //nuvola
-        var nuvola_start = this.enableSpriteInput(game.add.sprite(x-10, y,'tileset',32));
+        var nuvola_start = game.add.sprite(x-10, y,'tileset',32);
         nuvola_start.addChild(game.add.sprite(0,nuvola_start.height,'tileset',36));
-        var nuvola_middle = this.enableSpriteInput(game.add.sprite(nuvola_start.position.x + nuvola_start.width +5, y,'tileset',31));
+        var nuvola_middle = game.add.sprite(nuvola_start.position.x + nuvola_start.width +5, y,'tileset',31);
         nuvola_middle.addChild(game.add.sprite(0,nuvola_middle.height,'tileset',35));
-        var nuvola_end = this.enableSpriteInput(game.add.sprite(nuvola_middle.position.x + nuvola_middle.width +5, y,'tileset',33));
+        var nuvola_end = game.add.sprite(nuvola_middle.position.x + nuvola_middle.width +5, y,'tileset',33);
         nuvola_end.addChild(game.add.sprite(0,nuvola_end.height,'tileset',34));
         //cespuglio
-        var cespuglio_start = this.enableSpriteInput(game.add.sprite(x-10, y + nuvola_start.height*2,'tileset',25));
-        var cespuglio_middle = this.enableSpriteInput(game.add.sprite(cespuglio_start.position.x+ cespuglio_start.width+5, y + nuvola_start.height*2,'tileset',23));
-        var cespuglio_end = this.enableSpriteInput(game.add.sprite(cespuglio_middle.position.x+ cespuglio_middle.width+5, y + nuvola_start.height*2,'tileset',24));
+        var cespuglio_start = game.add.sprite(x-10, y + nuvola_start.height*2,'tileset',25);
+        var cespuglio_middle = game.add.sprite(cespuglio_start.position.x+ cespuglio_start.width+5, y + nuvola_start.height*2,'tileset',23);
+        var cespuglio_end = game.add.sprite(cespuglio_middle.position.x+ cespuglio_middle.width+5, y + nuvola_start.height*2,'tileset',24);
         //montagna
-        var montagna_0 = this.enableSpriteInput(game.add.sprite(x, cespuglio_start.position.y+cespuglio_start.height + 5 + 16  ,'tileset',27));
+        var montagna_0 = game.add.sprite(x, cespuglio_start.position.y+cespuglio_start.height + 5 + 16  ,'tileset',27);
         montagna_0.addChild(game.add.sprite(0,montagna_0.height,'tileset',26));
         montagna_0.addChild(game.add.sprite(-montagna_0.width,montagna_0.height,'tileset',29));
         montagna_0.addChild(game.add.sprite(montagna_0.width,montagna_0.height,'tileset',28));
         montagna_0.scale.setTo(0.5,0.5);
         //montagna grande
-        var montagna_1 = this.enableSpriteInput(game.add.sprite(montagna_0.position.x+32+32+5, cespuglio_start.position.y+cespuglio_start.height + 5  ,'tileset',27));
+        var montagna_1 = game.add.sprite(montagna_0.position.x+32+32+5, cespuglio_start.position.y+cespuglio_start.height + 5  ,'tileset',27);
         montagna_1.addChild(game.add.sprite(0,montagna_1.height,'tileset',26));
         montagna_1.addChild(game.add.sprite(-montagna_1.width,montagna_1.height,'tileset',29));
         montagna_1.addChild(game.add.sprite(montagna_1.width,montagna_1.height,'tileset',28));
@@ -113,29 +111,34 @@ var editorState = {
         montagna_1.addChild(game.add.sprite(montagna_1.width,montagna_1.height*2,'tileset',26));
         montagna_1.addChild(game.add.sprite(montagna_1.width*2,montagna_1.height*2,'tileset',28));
         montagna_1.scale.setTo(0.5,0.5);
-        //li setto in moda tale che non siano ridimensionati
-        montagna_0.notResize = true;
-        montagna_1.notResize = true;
         
         //abitanti
         x = personaggi.position.x;
-        var mario = this.enableSpriteInput(game.add.sprite(x+personaggi.width/2-26-10, y+24,'mario_animation',0));
-        var goomba = this.enableSpriteInput(game.add.sprite(10 + mario.position.x + mario.width, mario.position.y,'animazione',19));
-        var tarta = this.enableSpriteInput(game.add.sprite(goomba.position.x, mario.position.y + mario.height+5,'animazione',22));
-        var queen = this.enableSpriteInput(game.add.sprite(mario.position.x, mario.position.y + mario.height+5,'animazione',35));
+        var mario = game.add.sprite(x+personaggi.width/2-26-10, y+24,'mario_animation',0);
+        var goomba = game.add.sprite(10 + mario.position.x + mario.width, mario.position.y,'animazione',19);
+        var tarta = game.add.sprite(goomba.position.x, mario.position.y + mario.height+5,'animazione',22);
+        var queen = game.add.sprite(mario.position.x, mario.position.y + mario.height+5,'animazione',35);
         
         this.sprite  = [terra,scalini,fine,tubo,fungo,vita,money,star,moneyx12,ground_money,block,tubo_special,nuvola_start,
                        nuvola_middle,nuvola_end,cespuglio_start,cespuglio_middle,cespuglio_end,montagna_0,montagna_1,mario,goomba,tarta,queen];
         this.sprite.forEach(function(item){
+            this.enableSpriteInput(item);
             item.startx = item.position.x;
             item.starty = item.position.y;
+            item.startsWidth = item.width/item.scale.x;
+            item.startsHeight = item.height/item.scale.y;
             item.arr = this.minmax(item.children);
             item.outposition = true;
             item.inputEnabled = true;
+            item.notResize = false;
             item.input.enableDrag();
             item.events.onDragStart.add(this.draggstart,this);
             item.events.onDragStop.add(this.draggsend,this);
         },this);
+        
+        //li setto in moda tale che non siano ridimensionati
+        montagna_0.notResize = true;
+        montagna_1.notResize = true;
     },
 
     drawButton: function(x,y,text,fun){
@@ -236,13 +239,14 @@ var editorState = {
     Markerfunction: function(pointer,xcoo,ycoo) {
         
         if(ycoo>=this.griglia.starty && ycoo<=this.griglia.endy){
-
+            
             if(this.objdrag!=null && this.objdrag.firsttouch){
                 
-                if(!this.objdrag.notResize && !this.objdrag.isTweening){
-                    this.drawMarker(this.marker,this.objdrag.arr[0]*0.5,this.objdrag.arr[1]*0.5,(this.objdrag.arr[2]-this.objdrag.arr[0]+this.objdrag.width)*0.5,(this.objdrag.arr[3]-this.objdrag.arr[1]+this.objdrag.height)*0.5,0xffffff,0.5);
-                    game.add.tween(this.objdrag.scale).to({ x: 0.5, y: 0.5},500,null,true);
-                    this.objdrag.isTweening = true;
+                this.marker.clear();
+                this.drawMarker(this.marker,0,0,16,16,0xf4e842);
+                if(!this.objdrag.notResize){
+                    this.drawMarker(this.marker,this.objdrag.arr[0]*0.5,this.objdrag.arr[1]*0.5,(this.objdrag.arr[2]-this.objdrag.arr[0]+this.objdrag.startsWidth)*0.5,(this.objdrag.arr[3]-this.objdrag.arr[1]+this.objdrag.startHeight)*0.5,0xffffff,0.5);
+                    game.add.tween(this.objdrag.scale).to({ x: 0.5, y: 0.5},350,null,true);
                 }
                 else{
                     this.drawMarker(this.marker,this.objdrag.arr[0]*0.5,this.objdrag.arr[1]*0.5,((this.objdrag.arr[2]-this.objdrag.arr[0])*0.5+this.objdrag.width),((this.objdrag.arr[3]-this.objdrag.arr[1])*0.5+this.objdrag.height),0xffffff,0.5);
@@ -270,26 +274,33 @@ var editorState = {
             this.marker.keep = false;
         }
         else if(!this.marker.keep){
-            if(this.objdrag!=null && this.objdrag.isTweening){
+            if(this.objdrag!=null && !this.objdrag.outposition){
                 if(!this.objdrag.notResize)
                     game.add.tween(this.objdrag.scale).to({ x: 1, y: 1},400,null,true);
                 this.objdrag.isTweening = false;
                 this.objdrag.outposition = true;
+                this.objdrag.firsttouch = true;
             }
+            this.marker.keep = true;
             this.marker.visible = false; 
         }
-
     },
 
     spriteOver: function(sprite){
         this.marker.clear();
-        this.drawMarker(this.marker,sprite.arr[0]*sprite.scale.x,sprite.arr[1]*sprite.scale.y,(sprite.arr[2]-sprite.arr[0])*sprite.scale.x+sprite.width,(sprite.arr[3]-sprite.arr[1])*sprite.scale.y+sprite.height);
-        sprite.first = true;
+        var scalax = 1;
+        var scalay = 1;
+        if(!sprite.outposition || sprite.notResize){
+            scalax = 0.5;
+            scalay = 0.5;
+        }
+        this.drawMarker(this.marker,sprite.arr[0]*scalax,sprite.arr[1]*scalay,(sprite.arr[2]-sprite.arr[0]+sprite.startsWidth)*scalax,(sprite.arr[3]-sprite.arr[1]+sprite.startsHeight)*scalay);
+        sprite.firsttouch = true;
         this.marker.x = sprite.position.x;
         this.marker.y = sprite.position.y;
         this.marker.visible = true;
-        this.marker.keep = true;
         this.marker.spriteOver = sprite;
+        this.marker.keep = true;
     },
 
     enableSpriteInput: function(sprite){
@@ -298,11 +309,10 @@ var editorState = {
         sprite.events.onInputOut.add(function(edit){
             this.marker.clear();
             this.drawMarker(this.marker,0,0,16,16);
-            this.marker.visible = false;
             this.marker.keep = false;
-            this.marker.spriteOver = null;
+            this.marker.visible = false;
+            this.marker.spriteOver = null ;
         }, this);
-        //sprite.events.onInputOut.add(function(edit){edit.getChildAt(1).addColor('#ffffff', 0);}, this);
         return sprite;
     },
 
@@ -368,7 +378,7 @@ var editorState = {
     draggsend: function(obj,pointer,x,y){
         //this.objdrag.inputEnabled = false;
         this.objdrag = null;
-        if(obj.outposition)
+        if(obj.outposition){
             game.add.tween(obj.position).to({ x: obj.startx, y: obj.starty},200,null,true).onComplete.add(
                 function(){
                     //obj.inputEnabled = true;
@@ -379,11 +389,11 @@ var editorState = {
                       && game.input.y>=(obj.position.y+obj.arr[1]*obj.scale.y) && game.input.y<=(obj.position.y+obj.arr[3]*obj.scale.y)+obj.height)
                         this.spriteOver(obj);
                 },this);
-        else{
+        }else{
             obj.position.x = this.marker.x;
             obj.position.y = this.marker.y;
-            if(game.input.x>=(obj.position.x+obj.arr[0]*obj.scale.x) && game.input.x<=(obj.position.x+obj.arr[2]*obj.scale.x+obj.width)
-                      && game.input.y>=(obj.position.y+obj.arr[1]*obj.scale.y) && game.input.y<=(obj.position.y+obj.arr[3]*obj.scale.y)+obj.height)
+            if(game.input.x>=(obj.position.x+obj.arr[0]*0.5) && game.input.x<=(obj.position.x+obj.arr[2]*0.5+obj.width)
+                && game.input.y>=(obj.position.y+obj.arr[1]*0.5) && game.input.y<=(obj.position.y+obj.arr[3]*0.5)+obj.height)
                         this.spriteOver(obj);
             else{
                 this.marker.clear();
@@ -391,6 +401,25 @@ var editorState = {
             }
         }
         obj.firsttouch = false;
+    },
+        
+    duplicate: function(sprite){
+        var duplicate = game.add.sprite(sprite.position.x, sprite.position.y,sprite.frameName,sprite.frame);
+        sprite.children.forEach(function(item){
+            duplicate.addChild(game.add.sprite(item.position.x, item.position.y,item.frameName,item.frame));
+        });
+        this.enableSpriteInput(duplicate);
+        duplicate.startx = sprite.position.x;
+        duplicate.starty = sprite.position.y;
+        duplicate.startsWidth = sprite.width/sprite.scale.x;
+        duplicate.startsHeight = sprite.height/sprite.scale.y;
+        duplicate.arr = this.minmax(sprite.children);
+        duplicate.outposition = true;
+        duplicate.inputEnabled = true;
+        duplicate.notResize = false;
+        duplicate.input.enableDrag();
+        duplicate.events.onDragStart.add(this.draggstart,this);
+        duplicate.events.onDragStop.add(this.draggsend,this);
     },
 
     minmax(arr){
