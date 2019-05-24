@@ -2,15 +2,15 @@
 
 {
 	"filename": "1",
-	"frame": {"x":0,"y":0,"w":26,"h":32},
+	"frame": {"x":0,"y":0,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":26,"h":32},
-	"sourceSize": {"w":26,"h":32}
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
 },
 {
 	"filename": "2",
-	"frame": {"x":26,"y":0,"w":32,"h":32},
+	"frame": {"x":32,"y":0,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -183,6 +183,6 @@
 	"format": "RGBA8888",
 	"size": {"w":64,"h":608},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:446429b8b3cbd214252dcf89eba24505:6ae94de7eb155184e10783486115fa54:76e184eef07936c7d257e654c036ae0e$"
+	"smartupdate": "$TexturePacker:SmartUpdate:5b9fc68d33a25e6afc2a5b68cd8ce2f2:822d0cc3d9c23761bfeecbe27705c20b:76e184eef07936c7d257e654c036ae0e$"
 }
 }

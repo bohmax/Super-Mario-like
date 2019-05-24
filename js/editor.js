@@ -114,7 +114,7 @@ var editorState = {
         
         //abitanti
         x = personaggi.position.x;
-        var mario = game.add.sprite(x+personaggi.width/2-26-10, y+24,'mario_animation',0);
+        var mario = game.add.sprite(x+personaggi.width/2-32-10, y+24,'mario_animation',0);
         var goomba = game.add.sprite(10 + mario.position.x + mario.width, mario.position.y,'animazione',19);
         var tarta = game.add.sprite(goomba.position.x, mario.position.y + mario.height+5,'animazione',22);
         var queen = game.add.sprite(mario.position.x, mario.position.y + mario.height+5,'animazione',35);
@@ -298,6 +298,7 @@ var editorState = {
             scalax = 0.5;
             scalay = 0.5;
         }
+        console.log(sprite.startsWidth);
         this.drawMarker(this.marker,sprite.arr[0]*scalax,sprite.arr[1]*scalay,(sprite.arr[2]-sprite.arr[0]+sprite.startsWidth)*scalax,(sprite.arr[3]-sprite.arr[1]+sprite.startsHeight)*scalay);
         sprite.firsttouch = true;
         this.marker.x = sprite.position.x;
@@ -384,7 +385,12 @@ var editorState = {
         this.objdrag = null;
         //l'oggetto si trova fuori dalla gliglia
         if (obj.outposition) {
-            if (obj.placed) { obj.destroy(); console.log("hello") }
+            if (obj.placed && obj.duplicate) {
+                console.log(obj.duplicate)
+                obj.destroy();
+                this.marker.clear();
+                this.drawMarker(this.marker,0,0,16,16,0xffffff);                
+            }
             else {
                 game.add.tween(obj.position).to({ x: obj.startx, y: obj.starty }, 200, null, true).onComplete.add(
                     function () {

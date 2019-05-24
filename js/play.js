@@ -80,7 +80,7 @@ var playState = {
 
         this.queen = this.getqueen.getFirstAlive();
         this.queen.scale.y=1;
-        this.queen.position.y -= 16;
+        this.queen.position.y -= 32;
         game.physics.arcade.enable(this.queen);
         this.queen.body.setSize(256,game.world.height,-256,-game.world.height+this.queen.height); 
 
@@ -172,6 +172,10 @@ var playState = {
         });
         this.rotate.forEach(function(item) {
             item.angle += 1;
+        });
+        
+        this.enemy.forEach(function(item) {
+            game.debug.body(item);
         });
 
         //------------collisioni degli oggetti---------
@@ -341,8 +345,8 @@ var playState = {
                         this.enemy.add(goomba);
                         goomba.body.velocity.x = -60;
                     } 
-                    else{
-                        goomba = this.createobject(this.enemypoint[consecutive].x,originaly-48,6,22);
+                    else{ //tartuga
+                        goomba = this.createobject(this.enemypoint[consecutive].x,originaly-64,6,22);
                         if(!goomba.isTartaGoomba){
                             goomba.animations.add('walk',[22,23],4,true);
                             goomba.animations.add('scudo',[24,25],4,true);
@@ -354,7 +358,7 @@ var playState = {
                         goomba.isDead = false;
                         goomba.animations.play('walk');
                         this.enemy.add(goomba);
-                        goomba.body.setSize(32,48);
+                        goomba.body.setSize(32,48,0,16);
                         goomba.body.velocity.x = -45;
                     }
                     goomba.scale.setTo(1,1);
@@ -699,8 +703,8 @@ var playState = {
                     enemy.animations.play('scudo');
                     enemy.myvelocity = 0;
                     enemy.body.velocity.x = 0;
-                    enemy.body.setSize(32,28);
-                    enemy.position.y += 20;
+                    enemy.body.setSize(32,28,0,0);
+                    enemy.position.y += 28;
                     enemy.timer = game.time.events.add(7950, function () {
                         if(!enemy.isDead){
                             enemy.attacked = false;
@@ -709,8 +713,8 @@ var playState = {
                             if(enemy.scale.x>0)
                                 enemy.body.velocity.x = -enemy.myvelocity;
                             else enemy.body.velocity.x = enemy.myvelocity;
-                            enemy.position.y -= 20;
-                            enemy.body.setSize(32,48);
+                            enemy.position.y -= 28;
+                            enemy.body.setSize(32,48,0,16);
                         }
                     },this);
                 } else{
