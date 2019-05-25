@@ -448,8 +448,12 @@ var editorState = {
     },
 
     muosedown: function (obj, pointer) {
-        if (this.objselected != null)
-            console.log("conso")
+        //double click
+        if (pointer.msSinceLastClick < game.input.doubleTapRate) {
+            console.log('Double clicked sprite: ', obj.key);
+        }
+        //if (this.objselected != null)
+        //    console.log("conso")
     },
 
     muoseup: function (obj, pointer, isover) { //viene attivato solo se non era stato draggato
