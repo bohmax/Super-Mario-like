@@ -135,12 +135,15 @@ var editorState = {
             item.notResize = false; //la sprite non deve essere ridisegnata
             item.placed = false; //indica che la sprite è stata posizionata almeno una volta nella griglia
             item.duplicate = true; //serve per sapere se si tratta di una sprite da poter duplicare opure no
+            if ((item.arr[2] - item.arr[0] + item.startsWidth) === 32 && (item.arr[3] - item.arr[1] + item.startsHeight) === 32) //se la dimesione della aprite è 32*32
+                item.multirow = true; //allora può essere abilitata la selezione multilinea
         },this);
         
         //li setto in moda tale che non siano ridimensionati
         montagna_0.notResize = true;
         montagna_1.notResize = true;
         mario.duplicate = false;
+        mario.multirow = false;
         queen.duplicate = false;
     },
 
@@ -241,7 +244,7 @@ var editorState = {
 
     Markerfunction: function(pointer,xcoo,ycoo) {
         
-        if(ycoo>=this.griglia.starty && ycoo<=this.griglia.endy){
+        if(ycoo>=this.griglia.starty && ycoo<=this.griglia.endy - 1){
             
             if(this.objdrag!=null && this.objdrag.firsttouch){
                 
@@ -264,10 +267,22 @@ var editorState = {
                 //differenza dall'inizio della camera
                 var diff = ((this.disegno.x*-1)%16);
                 var x = parseInt((xcoo+diff)/16);
-                var y = parseInt(ycoo/16);
+                var y = parseInt(ycoo / 16);
 
+                if (this.objselected != null && this.objdrag == null) { //per sapere se deve applicare la selezione multilinea
+                    this.marker.clear();
+                    this.drawMarker(this.marker, 0, 0, 16 * 16, 16, 0xffffff);
+                    if (game.input.activePointer.leftButton.isDown) {
+                        for (var i = 0; i < 16; i++) { //duplico l'oggetto e lo inserisco 
+                            let duplicato = this.duplicate(this.objselected);
+                            duplicato.scale.setTo(0.5, 0.5);
+                            this.insertfunction(duplicato, this.marker.x + i*16, this.marker.y)
+                        }  
+                    }
+                }
                 this.marker.x = (x * 16) - diff;
                 this.marker.y = y * 16;
+
             }
             else{
                 this.marker.x = this.marker.spriteOver.position.x;
@@ -315,7 +330,7 @@ var editorState = {
         sprite.events.onInputOver.add(this.spriteOver, this);
         sprite.events.onInputDown.add(this.muosedown, this);
         sprite.events.onInputUp.add(this.muoseup, this);
-        sprite.events.onInputOut.add(function(edit){
+        sprite.events.onInputOut.add(function(){
             this.marker.clear();
             this.drawMarker(this.marker,0,0,16,16);
             this.marker.keep = false;
@@ -328,7 +343,7 @@ var editorState = {
         sprite.events.onDragStart.add(this.draggstart, this);
         sprite.events.onDragStop.add(this.draggsend, this);
         sprite.input.dragDistanceThreshold = 1;
-        sprite.input.dragStopBlocksInputUp = false;
+        sprite.input.dragStopBlocksInputUp = true;
         return sprite;
     },
 
@@ -416,19 +431,8 @@ var editorState = {
                     }, this);
             }
         } else if (this.griglia.endy >= (this.marker.y + (obj.arr[3] - obj.arr[1] + obj.startsHeight) * 0.5)) { //se la sprite da inserire non sfora la griglia
-            this.disegno.addChild(obj)
-            console.log(this.marker.y)
-            obj.position.x = (this.disegno.x * -1) + this.marker.x;
-            obj.position.y = this.marker.y;
-            obj.placed = true;
-            if (game.input.x >= (obj.position.x + obj.arr[0] * 0.5) && game.input.x <= (obj.position.x + obj.arr[2] * 0.5 + obj.width)
-                && game.input.y >= (obj.position.y + obj.arr[1] * 0.5) && game.input.y <= (obj.position.y + obj.arr[3] * 0.5) + obj.height)
-                this.spriteOver(obj);
-            else {
-                this.marker.clear();
-                this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
-            }
-            if (obj.duplicate) //creo il nuovo oggetto da posizionare dopo che è stato piazzato l'elemento nella griglia
+            this.insertfunction(obj, this.marker.x, this.marker.y);
+            if (obj.duplicate) //creo il nuovo oggetto da posizionare se è da duplicare dopo che è stato piazzato l'elemento nella griglia
                 this.duplicate(obj);
         } else {
             if (obj.placed) {
@@ -449,17 +453,21 @@ var editorState = {
 
     muosedown: function (obj, pointer) {
         //double click
-        if (pointer.msSinceLastClick < game.input.doubleTapRate) {
+        if (pointer.msSinceLastClick < game.input.doubleTapRate && obj.multirow) {
             console.log('Double clicked sprite: ', obj.key);
+            this.objselected = obj;
+            //this.marker.clear();
+            //this.drawMarker(this.marker, 0, 0, 16*16, 16, 0xffffff);
         }
-        //if (this.objselected != null)
-        //    console.log("conso")
+        //if (obj.outposition) // se il click avviene nella griglia
+        //    console.log("ci sono")
     },
 
     muoseup: function (obj, pointer, isover) { //viene attivato solo se non era stato draggato
-        var prova = this.duplicate(obj);
-        prova.position.x = 10;
-        this.objselected = obj;
+        console.log("hei")
+        //var prova = this.duplicate(obj);
+        //prova.position.x = 10;
+        //this.objselected = obj;
     },
         
     duplicate: function (sprite) {
@@ -480,7 +488,7 @@ var editorState = {
         duplicate.notResize = sprite.notResize;
         duplicate.placed = false;
         duplicate.duplicate = sprite.duplicate;
-        duplicate.input.enableDrag();
+        duplicate.multirow = sprite.multirow;
         return duplicate;
     },
 
@@ -500,6 +508,20 @@ var editorState = {
             }
         }
         return coord;
+    },
+
+    insertfunction(sprite,posx,posy) {
+        this.disegno.addChild(sprite);
+        sprite.position.x = (this.disegno.x * -1) + posx;
+        sprite.position.y = posy;
+        sprite.placed = true;
+        if (game.input.x >= (sprite.position.x + sprite.arr[0] * 0.5) && game.input.x <= (sprite.position.x + sprite.arr[2] * 0.5 + sprite.width)
+            && game.input.y >= (sprite.position.y + sprite.arr[1] * 0.5) && game.input.y <= (sprite.position.y + sprite.arr[3] * 0.5) + sprite.height)
+            this.spriteOver(sprite);
+        else {
+            this.marker.clear();
+            this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
+        }
     },
     
     update: function() {
