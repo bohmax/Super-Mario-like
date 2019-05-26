@@ -247,7 +247,6 @@ var editorState = {
         if(ycoo>=this.griglia.starty && ycoo<=this.griglia.endy - 1){
             
             if(this.objdrag!=null && this.objdrag.firsttouch){
-                
                 this.marker.clear();
                 this.drawMarker(this.marker,0,0,16,16,0xf4e842);
                 if (!this.objdrag.notResize) {
@@ -276,8 +275,12 @@ var editorState = {
                         for (var i = 0; i < 16; i++) { //duplico l'oggetto e lo inserisco 
                             let duplicato = this.duplicate(this.objselected);
                             duplicato.scale.setTo(0.5, 0.5);
-                            this.insertfunction(duplicato, this.marker.x + i*16, this.marker.y)
-                        }  
+                            this.insertfunction(duplicato, this.marker.x + i*16, this.marker.y);
+                            duplicato.outposition = false;
+                            duplicato.firsttouch = false;
+                        }
+                        this.marker.clear();
+                        this.drawMarker(this.marker, 0, 0, 16, 16, 0xffffff);
                     }
                 }
                 this.marker.x = (x * 16) - diff;
@@ -456,11 +459,15 @@ var editorState = {
         if (pointer.msSinceLastClick < game.input.doubleTapRate && obj.multirow) {
             console.log('Double clicked sprite: ', obj.key);
             this.objselected = obj;
+            this.objdrag = null;
             //this.marker.clear();
             //this.drawMarker(this.marker, 0, 0, 16*16, 16, 0xffffff);
+        } 
+        else if (obj.outposition){ // se il click non avviene nella griglia
+            console.log("ci sono")
+            this.objdrag = obj; //ci sono altri parametri poi da impostare, come spriteover... guardare la dragstart
+            
         }
-        //if (obj.outposition) // se il click avviene nella griglia
-        //    console.log("ci sono")
     },
 
     muoseup: function (obj, pointer, isover) { //viene attivato solo se non era stato draggato
