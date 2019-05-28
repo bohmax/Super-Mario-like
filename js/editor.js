@@ -107,23 +107,23 @@ var editorState = {
         montagna_1.addChild(game.add.sprite(0,montagna_1.height,'tileset',26));
         montagna_1.addChild(game.add.sprite(-montagna_1.width,montagna_1.height,'tileset',29));
         montagna_1.addChild(game.add.sprite(montagna_1.width,montagna_1.height,'tileset',28));
-        
+
         montagna_1.addChild(game.add.sprite(0,montagna_1.height*2,'tileset',30));
         montagna_1.addChild(game.add.sprite(-montagna_1.width*2,montagna_1.height*2,'tileset',29));
         montagna_1.addChild(game.add.sprite(-montagna_1.width,montagna_1.height*2,'tileset',26));
         montagna_1.addChild(game.add.sprite(montagna_1.width,montagna_1.height*2,'tileset',26));
         montagna_1.addChild(game.add.sprite(montagna_1.width*2,montagna_1.height*2,'tileset',28));
         montagna_1.scale.setTo(0.5,0.5);
-        
+
         //abitanti
         x = personaggi.position.x;
         var mario = game.add.sprite(x+personaggi.width/2-32-10, y+24,'mario_animation',0);
         var goomba = game.add.sprite(10 + mario.position.x + mario.width, mario.position.y,'animazione',19);
         var tarta = game.add.sprite(goomba.position.x, mario.position.y + mario.height+5,'animazione',22);
         var queen = game.add.sprite(mario.position.x, mario.position.y + mario.height+5,'animazione',35);
-        
+
         this.sprite  = [terra,scalini,fine,tubo,fungo,vita,money,star,moneyx12,ground_money,block,tubo_special,nuvola_start,
-                       nuvola_middle,nuvola_end,cespuglio_start,cespuglio_middle,cespuglio_end,montagna_0,montagna_1,mario,goomba,tarta,queen];
+                        nuvola_middle,nuvola_end,cespuglio_start,cespuglio_middle,cespuglio_end,montagna_0,montagna_1,mario,goomba,tarta,queen];
         this.sprite.forEach(function(item){
             this.enableSpriteInput(item);
             item.startx = item.position.x;
@@ -139,7 +139,7 @@ var editorState = {
             if ((item.arr[2] - item.arr[0] + item.startsWidth) === 32 && (item.arr[3] - item.arr[1] + item.startsHeight) === 32) //se la dimesione della aprite è 32*32
                 item.multirow = true; //allora può essere abilitata la selezione multilinea
         },this);
-        
+
         //li setto in moda tale che non siano ridimensionati
         montagna_0.notResize = true;
         montagna_1.notResize = true;
@@ -216,17 +216,17 @@ var editorState = {
     drawHelp: function(){
         var grafica = game.add.graphics(0, 0);
         var rect = this.drawRectangle(grafica, 10, 10, game.camera.width-20,game.camera.height-20, 3, 0x000000, 1, 0x4c78e8, 0.5,7);
-        
+
         text = game.add.text(rect.width / 2, rect.height / 2, "Selezionare un oggetto e trascinalo\no cliccarlo nell'\napposita quadratino,ricordantosi\nche sarà tutto inserito a partire dall'angolo più in alto a sinistra", game.global.style);
         text.anchor.set(0.5);
         text.fontSize = 13;
         grafica.bottone = grafica.addChild(this.drawButton(rect.x + (game.camera.width-20)/2-60,(game.camera.height-20-30),'INDIETRO',this.indietro));
         grafica.alpha = 0;
         grafica.bottone.input.enabled = false;
-        
+
         grafica.addChild(rect);
         grafica.addChild(text);
-        
+
         return grafica;
     },
 
@@ -244,26 +244,23 @@ var editorState = {
     },
 
     Markerfunction: function(pointer,xcoo,ycoo) {
-        
+
         if(ycoo>=this.griglia.starty && ycoo<=this.griglia.endy - 1){
 
-            var objtomove = null;
-            if (this.objdrag != null) objtomove = this.objdrag;
-            else if (this.objselected != null) { objtomove = this.objselected; objtomove.alpha = 0.5; }
-            
-            if ((objtomove != null && objtomove.firsttouch)) {
+            if ((this.objdrag != null && this.objdrag.firsttouch)) {
                 this.marker.clear();
                 this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
-                this.drawMarker(this.marker, objtomove.arr[0] * 0.5, objtomove.arr[1] * 0.5, (objtomove.arr[2] - objtomove.arr[0] + objtomove.startsWidth) * 0.5, (objtomove.arr[3] - objtomove.arr[1] + objtomove.startsHeight) * 0.5, 0xffffff, 0.5);
-                if (!objtomove.notResize && this.objselected == null) {//il secondo parametro è per comodità
-                    game.add.tween(objtomove.scale).to({ x: 0.5, y: 0.5 }, 350, null, true);
+                this.drawMarker(this.marker, this.objdrag.arr[0] * 0.5, this.objdrag.arr[1] * 0.5, (this.objdrag.arr[2] - this.objdrag.arr[0] + this.objdrag.startsWidth) * 0.5, (this.objdrag.arr[3] - this.objdrag.arr[1] + this.objdrag.startsHeight) * 0.5, 0xffffff, 0.5);
+                if (!this.objdrag.notResize) {
+                    game.add.tween(this.objdrag.scale).to({ x: 0.5, y: 0.5 }, 350, null, true);
                 }
 
                 //indica che l oggetto è entrato nella tabella
-                objtomove.outposition = false;
-                objtomove.firsttouch = false;
+                this.objdrag.outposition = false;
+                this.objdrag.firsttouch = false;
             }
-            
+
+            //se il muose non è all'interno di una sprite
             if(this.marker.spriteOver==null){
                 //differenza dall'inizio della camera
                 var diff = ((this.disegno.x*-1)%16);
@@ -288,22 +285,27 @@ var editorState = {
                         this.marker.clear();
                         this.drawMarker(this.marker, 0, 0, 16, 16, 0xffffff);
                     }
-                } else if (this.objselected != null) {// se devo prevedere la selezione singola
-                    objtomove.position.x = this.marker.x;
-                    objtomove.position.y = this.marker.y;
-                    if (game.input.activePointer.leftButton.isDown) { //inserisco un nuovo oggetto non quello presente in objselected
-                        let duplicato = this.duplicate(this.objselected);
-                        duplicato.scale.setTo(0.5, 0.5);
-                        this.insertfunction(duplicato, this.marker.x, this.marker.y);
-                        duplicato.outposition = false;
-                        duplicato.firsttouch = false;
-                    }
-                }
-
+                } else if (this.objselected != null)// se devo prevedere la selezione singola
+                    this.objselectionsupport();
             }
             else {
-                this.marker.x = this.marker.spriteOver.position.x;
-                this.marker.y = this.marker.spriteOver.position.y;
+                // se devo nascondere la selezione singola
+                if (this.objselected != null){
+                    //differenza dall'inizio della camera
+                    var diff = ((this.disegno.x*-1)%16);
+                    var x = parseInt((xcoo+diff)/16);
+                    var y = parseInt(ycoo / 16);
+
+                    //imposta il marker
+                    this.marker.x = (x * 16) - diff;
+                    this.marker.y = y * 16;
+
+                    this.objselectionsupport();
+                }
+                else{
+                    this.marker.x = this.marker.spriteOver.position.x;
+                    this.marker.y = this.marker.spriteOver.position.y;
+                }
             }
             this.marker.visible = true;
             this.marker.keep = false;
@@ -331,6 +333,7 @@ var editorState = {
         //utilizzati per capire la dimensione da disegnare
         var scalax = 1;
         var scalay = 1;
+
         if(!sprite.outposition || sprite.notResize){
             scalax = 0.5;
             scalay = 0.5;
@@ -374,7 +377,7 @@ var editorState = {
         this.bottoni.forEach(function(item){
             item.input.enabled = false;
         });
-        
+
         this.sprite.forEach(function(item){
             item.input.enabled = false;
         });
@@ -393,7 +396,7 @@ var editorState = {
         this.bottoni.forEach(function(item){
             item.input.enabled = true;
         });
-        
+
         this.sprite.forEach(function(item){
             item.input.enabled = true;
         });
@@ -414,7 +417,7 @@ var editorState = {
         this.helper.destroy();
         game.state.start('menu');
     },
-    
+
     draggstart: function (obj, pointer, x, y) {
         //inizializza operazione
         this.objdrag = obj;
@@ -432,7 +435,7 @@ var editorState = {
         this.marker.spriteOver = null;
         this.Markerfunction(null, game.input.x,game.input.y);
     },
-    
+
     draggsend: function(obj,pointer,x,y){
         console.log((this.marker.y + (obj.arr[3] - obj.arr[1] + obj.startsHeight) * 0.5));
         this.objdrag = null;
@@ -480,6 +483,7 @@ var editorState = {
 
     muosedown: function (obj, pointer) {
         //double click
+        console.log(obj.duplicate)
         if (pointer.msSinceLastClick < game.input.doubleTapRate && obj.multirow) {
             console.log('Double clicked sprite: ', obj.key);
             this.multiobjselected = obj;
@@ -491,14 +495,18 @@ var editorState = {
         else if (obj.outposition){ // se il click non avviene nella griglia
             console.log("ci sono");
             //imposta la sprite
-            if (this.objselected != null) this.objselected.destroy();
-            this.objselected = this.duplicate(obj); //ci sono altri parametri poi da impostare, come spriteover... guardare la dragstart
-            this.objselected.alpha = 0;
-            this.objselected.inputEnabled = false;
-            this.objselected.scale.setTo(0.5, 0.5);
-            this.objselected.firsttouch
+            this.multiobjselected = null;
+            if (this.objselected != null){ this.objselected.destroy(); this.objselected = null;}
+            if(obj.duplicate){
+                this.objselected = this.duplicate(obj); //ci sono altri parametri poi da impostare, come spriteover... guardare la dragstart
+            
+                this.objselected.alpha = 0;
+                this.objselected.inputEnabled = false;
+                this.objselected.scale.setTo(0.5, 0.5);
+                this.objselected.firsttouch = true;
 
-            this.objdrag = null;
+                this.objdrag = null;
+            } 
         }
     },
 
@@ -508,7 +516,7 @@ var editorState = {
         //prova.position.x = 10;
         //this.objselected = obj;
     },
-        
+
     duplicate: function (sprite) {
         var duplicate = game.add.sprite(sprite.startx, sprite.starty, sprite.key, sprite.frame);
         sprite.children.forEach(function(item){
@@ -562,14 +570,35 @@ var editorState = {
             this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
         }
     },
-    
+
+    objselectionsupport(){
+        this.objselected.alpha = 0.5; 
+        this.marker.clear();
+        this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
+        this.drawMarker(this.marker, this.objselected.arr[0] * 0.5, this.objselected.arr[1] * 0.5, (this.objselected.arr[2] - this.objselected.arr[0] + this.objselected.startsWidth) * 0.5, (this.objselected.arr[3] - this.objselected.arr[1] + this.objselected.startsHeight) * 0.5, 0xffffff, 0.5);
+
+        //indica che l oggetto è entrato nella tabella
+        this.objselected.outposition = false;
+        this.objselected.firsttouch = false;
+        this.objselected.position.x = this.marker.x;
+        this.objselected.position.y = this.marker.y;
+        if (game.input.activePointer.leftButton.isDown) { //inserisco un nuovo oggetto non quello presente in objselected
+            let duplicato = this.duplicate(this.objselected);
+            duplicato.scale.setTo(0.5, 0.5);
+            this.insertfunction(duplicato, this.marker.x, this.marker.y);
+            duplicato.outposition = false;
+            duplicato.firsttouch = false;
+            this.spriteOver(duplicato);
+        }
+    },
+
     update: function() {
         if (this.objdrag != null) {
             var position = 0
             if (this.objdrag.placed) position = (this.disegno.x * -1)
             this.objdrag.position.x = game.input.x - this.objdrag.width / 2 + position;
             this.objdrag.position.y = game.input.y - this.objdrag.height / 2;
-            
+
         }
     },
 
