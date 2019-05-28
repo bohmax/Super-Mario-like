@@ -11,7 +11,8 @@ var editorState = {
 
         this.drawObject();
         this.objdrag = null; //indica la sprite che sta venendo draggata
-        this.objselected = null; //indica l'oggetto che deve essere selezionato per la selezione rapida 
+        this.objselected = null; //indica l'oggetto che deve essere selezionato per la selezione rapida
+        this.multiobjselected = null; //indica l'oggetto per la selezione multipla
 
         this.scroll = this.drawscrollbar(11,459,0);
 
@@ -245,21 +246,22 @@ var editorState = {
     Markerfunction: function(pointer,xcoo,ycoo) {
         
         if(ycoo>=this.griglia.starty && ycoo<=this.griglia.endy - 1){
+
+            var objtomove = null;
+            if (this.objdrag != null) objtomove = this.objdrag;
+            else if (this.objselected != null) { objtomove = this.objselected; objtomove.alpha = 0.5; }
             
-            if(this.objdrag!=null && this.objdrag.firsttouch){
+            if ((objtomove != null && objtomove.firsttouch)) {
                 this.marker.clear();
-                this.drawMarker(this.marker,0,0,16,16,0xf4e842);
-                if (!this.objdrag.notResize) {
-                    this.drawMarker(this.marker, this.objdrag.arr[0] * 0.5, this.objdrag.arr[1] * 0.5, (this.objdrag.arr[2] - this.objdrag.arr[0] + this.objdrag.startsWidth) * 0.5, (this.objdrag.arr[3] - this.objdrag.arr[1] + this.objdrag.startsHeight)*0.5,0xffffff,0.5);
-                    game.add.tween(this.objdrag.scale).to({ x: 0.5, y: 0.5},350,null,true);
+                this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
+                this.drawMarker(this.marker, objtomove.arr[0] * 0.5, objtomove.arr[1] * 0.5, (objtomove.arr[2] - objtomove.arr[0] + objtomove.startsWidth) * 0.5, (objtomove.arr[3] - objtomove.arr[1] + objtomove.startsHeight) * 0.5, 0xffffff, 0.5);
+                if (!objtomove.notResize && this.objselected == null) {//il secondo parametro è per comodità
+                    game.add.tween(objtomove.scale).to({ x: 0.5, y: 0.5 }, 350, null, true);
                 }
-                else{
-                    this.drawMarker(this.marker,this.objdrag.arr[0]*0.5,this.objdrag.arr[1]*0.5,((this.objdrag.arr[2]-this.objdrag.arr[0])*0.5+this.objdrag.width),((this.objdrag.arr[3]-this.objdrag.arr[1])*0.5+this.objdrag.height),0xffffff,0.5);
-                }
-                
+
                 //indica che l oggetto è entrato nella tabella
-                this.objdrag.outposition = false;
-                this.objdrag.firsttouch = false;
+                objtomove.outposition = false;
+                objtomove.firsttouch = false;
             }
             
             if(this.marker.spriteOver==null){
@@ -268,46 +270,63 @@ var editorState = {
                 var x = parseInt((xcoo+diff)/16);
                 var y = parseInt(ycoo / 16);
 
-                if (this.objselected != null && this.objdrag == null) { //per sapere se deve applicare la selezione multilinea
+                //imposta il marker
+                this.marker.x = (x * 16) - diff;
+                this.marker.y = y * 16;
+
+                if (this.multiobjselected != null && this.objdrag == null) { //per sapere se deve applicare la selezione multilinea
                     this.marker.clear();
                     this.drawMarker(this.marker, 0, 0, 16 * 16, 16, 0xffffff);
                     if (game.input.activePointer.leftButton.isDown) {
                         for (var i = 0; i < 16; i++) { //duplico l'oggetto e lo inserisco 
-                            let duplicato = this.duplicate(this.objselected);
+                            let duplicato = this.duplicate(this.multiobjselected);
                             duplicato.scale.setTo(0.5, 0.5);
-                            this.insertfunction(duplicato, this.marker.x + i*16, this.marker.y);
+                            this.insertfunction(duplicato, this.marker.x + i * 16, this.marker.y);
                             duplicato.outposition = false;
                             duplicato.firsttouch = false;
                         }
                         this.marker.clear();
                         this.drawMarker(this.marker, 0, 0, 16, 16, 0xffffff);
                     }
+                } else if (this.objselected != null) {// se devo prevedere la selezione singola
+                    objtomove.position.x = this.marker.x;
+                    objtomove.position.y = this.marker.y;
+                    if (game.input.activePointer.leftButton.isDown) { //inserisco un nuovo oggetto non quello presente in objselected
+                        let duplicato = this.duplicate(this.objselected);
+                        duplicato.scale.setTo(0.5, 0.5);
+                        this.insertfunction(duplicato, this.marker.x, this.marker.y);
+                        duplicato.outposition = false;
+                        duplicato.firsttouch = false;
+                    }
                 }
-                this.marker.x = (x * 16) - diff;
-                this.marker.y = y * 16;
 
             }
-            else{
+            else {
                 this.marker.x = this.marker.spriteOver.position.x;
                 this.marker.y = this.marker.spriteOver.position.y;
             }
             this.marker.visible = true;
             this.marker.keep = false;
         }
-        else if(!this.marker.keep){
-            if(this.objdrag!=null && !this.objdrag.outposition){
-                if(!this.objdrag.notResize)
-                    game.add.tween(this.objdrag.scale).to({ x: 1, y: 1},400,null,true);
+        else if (!this.marker.keep) {
+
+            if (this.objdrag != null && !this.objdrag.outposition) {
+                if (!this.objdrag.notResize)
+                    game.add.tween(this.objdrag.scale).to({ x: 1, y: 1 }, 400, null, true);
                 this.objdrag.isTweening = false;
                 this.objdrag.outposition = true;
                 this.objdrag.firsttouch = true;
+            } else if (this.objselected != null) {
+                this.objselected.alpha = 0;
+                this.objselected.outposition = true;
+                this.objselected.firsttouch = true;
             }
             this.marker.keep = true;
-            this.marker.visible = false; 
+            this.marker.visible = false;
         }
     },
 
-    spriteOver: function(sprite){
+    spriteOver: function (sprite) {
         this.marker.clear();
         //utilizzati per capire la dimensione da disegnare
         var scalax = 1;
@@ -396,8 +415,13 @@ var editorState = {
         game.state.start('menu');
     },
     
-    draggstart: function(obj,pointer,x,y){
+    draggstart: function (obj, pointer, x, y) {
+        //inizializza operazione
         this.objdrag = obj;
+        if (this.objselected != null) this.objselected.destroy();
+        this.objselected = null;
+        this.multiobjselected = null;
+
         this.marker.clear();
         this.drawMarker(this.marker,0,0,16,16,0xf4e842);
         if(!obj.outposition)
@@ -458,15 +482,23 @@ var editorState = {
         //double click
         if (pointer.msSinceLastClick < game.input.doubleTapRate && obj.multirow) {
             console.log('Double clicked sprite: ', obj.key);
-            this.objselected = obj;
-            this.objdrag = null;
+            this.multiobjselected = obj;
+            if (this.objselected != null) this.objselected.destroy();
+            this.objselected = null;
             //this.marker.clear();
             //this.drawMarker(this.marker, 0, 0, 16*16, 16, 0xffffff);
         } 
         else if (obj.outposition){ // se il click non avviene nella griglia
-            console.log("ci sono")
-            this.objdrag = obj; //ci sono altri parametri poi da impostare, come spriteover... guardare la dragstart
-            
+            console.log("ci sono");
+            //imposta la sprite
+            if (this.objselected != null) this.objselected.destroy();
+            this.objselected = this.duplicate(obj); //ci sono altri parametri poi da impostare, come spriteover... guardare la dragstart
+            this.objselected.alpha = 0;
+            this.objselected.inputEnabled = false;
+            this.objselected.scale.setTo(0.5, 0.5);
+            this.objselected.firsttouch
+
+            this.objdrag = null;
         }
     },
 
