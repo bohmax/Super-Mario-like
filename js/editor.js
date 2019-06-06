@@ -2,6 +2,13 @@ var editorState = {
 
     create: function() {
         game.stage.backgroundColor = '#3498db';
+        this.objdrag = null; //indica la sprite che sta venendo draggata
+        this.objselected = null; //indica l'oggetto che deve essere selezionato per la selezione rapida
+        this.multiobjselected = null; //indica l'oggetto per la selezione multipla
+        var matrix = [];
+        for (var i = 0; i < 16; i++) //numero delle  colonne
+            matrix[i] = new Array(500); //numero di righe
+
 
         this.disegno = game.add.group();
         this.oggetti = game.add.group();
@@ -10,9 +17,6 @@ var editorState = {
         this.disegno.add(this.drawGrid());
 
         this.drawObject();
-        this.objdrag = null; //indica la sprite che sta venendo draggata
-        this.objselected = null; //indica l'oggetto che deve essere selezionato per la selezione rapida
-        this.multiobjselected = null; //indica l'oggetto per la selezione multipla
 
         this.scroll = this.drawscrollbar(11,459,0);
 
@@ -442,8 +446,7 @@ var editorState = {
         //l'oggetto si trova fuori dalla gliglia
         if (obj.outposition) {
             if (obj.placed && obj.duplicate) {
-                this.disegno.removeChild(obj)
-                obj.destroy();
+                this.deletefromgrid(obj);
                 this.marker.clear();
                 this.drawMarker(this.marker, 0, 0, 16, 16, 0xffffff);
             }
@@ -466,8 +469,7 @@ var editorState = {
                 this.duplicate(obj);
         } else {
             if (obj.placed) {
-                this.disegno.removeChild(obj)
-                obj.destroy();
+                this.deletefromgrid(obj);
             }
             else {
                 obj.position.x = this.marker.x;
@@ -506,7 +508,7 @@ var editorState = {
                 this.objselected.firsttouch = true;
 
                 this.objdrag = null;
-            } 
+            }
         }
     },
 
@@ -559,9 +561,14 @@ var editorState = {
 
     insertfunction(sprite,posx,posy) {
         this.disegno.addChild(sprite);
-        sprite.position.x = (this.disegno.x * -1) + posx;
+        posx = (this.disegno.x * -1) + posx;
+        sprite.position.x = posx;
         sprite.position.y = posy;
         sprite.placed = true;
+        this.matrix[posy][posx] = sprite;
+        sprite.forEach(function (item) {
+            this.matrix[posy + (item.position.y / 16)][posx+(item.position.x / 16] = item;
+        },this);
         if (game.input.x >= (sprite.position.x + sprite.arr[0] * 0.5) && game.input.x <= (sprite.position.x + sprite.arr[2] * 0.5 + sprite.width)
             && game.input.y >= (sprite.position.y + sprite.arr[1] * 0.5) && game.input.y <= (sprite.position.y + sprite.arr[3] * 0.5) + sprite.height)
             this.spriteOver(sprite);
@@ -569,6 +576,11 @@ var editorState = {
             this.marker.clear();
             this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
         }
+    },
+
+    deletefromgrid(sprite) {
+        this.disegno.removeChild(sprite)
+        sprite.destroy();
     },
 
     objselectionsupport(){
