@@ -5,9 +5,9 @@ var editorState = {
         this.objdrag = null; //indica la sprite che sta venendo draggata
         this.objselected = null; //indica l'oggetto che deve essere selezionato per la selezione rapida
         this.multiobjselected = null; //indica l'oggetto per la selezione multipla
-        var matrix = [];
+        this.matrix = [];
         for (var i = 0; i < 16; i++) //numero delle  colonne
-            matrix[i] = new Array(500); //numero di righe
+            this.matrix[i] = new Array(500); //numero di righe
 
 
         this.disegno = game.add.group();
@@ -441,7 +441,7 @@ var editorState = {
     },
 
     draggsend: function(obj,pointer,x,y){
-        console.log((this.marker.y + (obj.arr[3] - obj.arr[1] + obj.startsHeight) * 0.5));
+        //console.log((this.marker.y + (obj.arr[3] - obj.arr[1] + obj.startsHeight) * 0.5));
         this.objdrag = null;
         //l'oggetto si trova fuori dalla gliglia
         if (obj.outposition) {
@@ -472,6 +472,7 @@ var editorState = {
                 this.deletefromgrid(obj);
             }
             else {
+                
                 obj.position.x = this.marker.x;
                 obj.position.y = this.marker.y;
                 game.add.tween(obj.position).to({ x: obj.startx, y: obj.starty }, 200, null, true); //se non era presente nella griglia torna alla posi di partenza
@@ -565,10 +566,21 @@ var editorState = {
         sprite.position.x = posx;
         sprite.position.y = posy;
         sprite.placed = true;
-        this.matrix[posy][posx] = sprite;
-        sprite.forEach(function (item) {
-            this.matrix[posy + (item.position.y / 16)][posx+(item.position.x / 16] = item;
+        
+        //inserisci nella matrice
+        var diff = ((this.disegno.x*-1)%16);
+        var x = parseInt((posx+diff)/16);
+        var y = parseInt((posy-this.griglia.starty) / 16);
+        if(sprite.matrixpos != undefined){
+            this.deletefrommatrix(sprite,false);
+        }
+        this.matrix[y][x] = sprite;
+        sprite.matrixpos = [y,x];
+        sprite.children.forEach(function (item) {
+            this.matrix[y + (item.position.y / 32)][x+(item.position.x / 32)] = item;
         },this);
+        
+        //controlla se il puntatore si trova sopra la sprite
         if (game.input.x >= (sprite.position.x + sprite.arr[0] * 0.5) && game.input.x <= (sprite.position.x + sprite.arr[2] * 0.5 + sprite.width)
             && game.input.y >= (sprite.position.y + sprite.arr[1] * 0.5) && game.input.y <= (sprite.position.y + sprite.arr[3] * 0.5) + sprite.height)
             this.spriteOver(sprite);
@@ -576,11 +588,32 @@ var editorState = {
             this.marker.clear();
             this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
         }
+        console.log(this.matrix);
     },
 
     deletefromgrid(sprite) {
-        this.disegno.removeChild(sprite)
+        this.disegno.removeChild(sprite);
+        this.deletefrommatrix(sprite);
         sprite.destroy();
+        console.log(this.matrix,true);
+    },
+    
+    deletefrommatrix(sprite,destroy) {
+        var y = sprite.matrixpos[0];
+        var x = sprite.matrixpos[1];
+        this.matrix[y][x] = undefined;
+        console.log(sprite.children.length);
+        var i = 0,lunghezza = sprite.children.length;
+        
+        while(i<lunghezza) { //cicla in base al numero originale di figli
+            if(destroy){
+                this.matrix[y + (sprite.children[0].position.y / 32)][x+(sprite.children[0].position.x / 32)] = undefined;
+                sprite.children[0].destroy();
+            } else{
+                this.matrix[y + (sprite.children[i].position.y / 32)][x+(sprite.children[i].position.x / 32)] = undefined;
+            }
+            i++;
+        }
     },
 
     objselectionsupport(){
