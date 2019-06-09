@@ -7,7 +7,8 @@ var editorState = {
         this.multiobjselected = null; //indica l'oggetto per la selezione multipla
         this.matrix = [];
         for (var i = 0; i < 16; i++) //numero delle  colonne
-            this.matrix[i] = new Array(500); //numero di righe
+            this.matrix[i] = new Array(500).fill([,]); //numero di righe 
+            //il primo parametro indica un oggetto che non sia il paesaggio, il secondo il paesaggio
 
 
         this.disegno = game.add.group();
@@ -59,10 +60,12 @@ var editorState = {
     },
 
     drawObject: function(){
+        
         var terrain = game.add.text(0, 0, 'TERRENO', game.global.style);
         var special = game.add.text(terrain.width+15, 0, 'SPECIALI', game.global.style);
         var sfondo = game.add.text(special.position.x + special.width+15, 0, 'SFONDO', game.global.style);
         var personaggi = game.add.text(sfondo.position.x + sfondo.width+15, 0, 'ABITANTI', game.global.style);
+        
 
         //terreno
         var y = terrain.height;
@@ -72,7 +75,10 @@ var editorState = {
         fine.addChild(game.add.sprite(32,0,'tileset',38));
         var tubo = game.add.sprite(10, fine.height+fine.position.y+10,'tileset',40);
         tubo.addChild(game.add.sprite(fine.width,0,'tileset',39));
-
+        terra.type = 0; // 0 rappresenta il terreno
+        scalini.type = 0; // 0 rappresenta il terreno
+        fine.type = 0; // 0 rappresenta il terreno
+        tubo.type = 0; // 0 rappresenta il terreno
 
         //speciali
         var x = special.position.x;
@@ -89,6 +95,16 @@ var editorState = {
         var tubo_special = game.add.sprite(block.position.x, block.position.y+block.height+5,'tileset',37);
         tubo_special.addChild(game.add.sprite(tubo_special.width,0,'tileset',38));     
         x = sfondo.position.x;
+        tubo.addChild(game.add.sprite(fine.width,0,'tileset',39));
+        fungo.type = 1; //1 rappresenta gli oggetti speciali
+        vita.type = 1;
+        money.type = 1;
+        star.type = 1;
+        moneyx12.type = 1;
+        ground_money.type = 1;
+        block.type = 1; 
+        tubo_special.type = 1; 
+        
         //nuvola
         var nuvola_start = game.add.sprite(x-10, y,'tileset',32);
         nuvola_start.addChild(game.add.sprite(0,nuvola_start.height,'tileset',36));
@@ -118,6 +134,14 @@ var editorState = {
         montagna_1.addChild(game.add.sprite(montagna_1.width,montagna_1.height*2,'tileset',26));
         montagna_1.addChild(game.add.sprite(montagna_1.width*2,montagna_1.height*2,'tileset',28));
         montagna_1.scale.setTo(0.5,0.5);
+        nuvola_start.type = 2; //2 rappresenta gli oggetti di sfondo
+        nuvola_middle.type = 2;
+        nuvola_end.type = 2;
+        montagna_0.type = 2;
+        montagna_1.type = 2;
+        cespuglio_start.type = 2;
+        cespuglio_middle.type = 2;
+        cespuglio_end.type = 2;
 
         //abitanti
         x = personaggi.position.x;
@@ -125,6 +149,10 @@ var editorState = {
         var goomba = game.add.sprite(10 + mario.position.x + mario.width, mario.position.y,'animazione',19);
         var tarta = game.add.sprite(goomba.position.x, mario.position.y + mario.height+5,'animazione',22);
         var queen = game.add.sprite(mario.position.x, mario.position.y + mario.height+5,'animazione',35);
+        mario.type = 3; //3 rappresenta gli oggetti abitanti
+        goomba.type = 3;
+        tarta.type = 3;
+        queen.type = 3;
 
         this.sprite  = [terra,scalini,fine,tubo,fungo,vita,money,star,moneyx12,ground_money,block,tubo_special,nuvola_start,
                         nuvola_middle,nuvola_end,cespuglio_start,cespuglio_middle,cespuglio_end,montagna_0,montagna_1,mario,goomba,tarta,queen];
@@ -539,6 +567,7 @@ var editorState = {
         duplicate.placed = false;
         duplicate.duplicate = sprite.duplicate;
         duplicate.multirow = sprite.multirow;
+        duplicate.type = sprite.type;
         return duplicate;
     },
 
@@ -574,10 +603,11 @@ var editorState = {
         if(sprite.matrixpos != undefined){
             this.deletefrommatrix(sprite,false);
         }
-        this.matrix[y][x] = sprite;
+        this.matrix[y][x] = [undefined,sprite];
         sprite.matrixpos = [y,x];
+        console.log(sprite.matrixpos);
         sprite.children.forEach(function (item) {
-            this.matrix[y + (item.position.y / 32)][x+(item.position.x / 32)] = item;
+            this.matrix[y + (item.position.y / 32)][x+(item.position.x / 32)] = [undefined,item];
         },this);
         
         //controlla se il puntatore si trova sopra la sprite
@@ -601,16 +631,16 @@ var editorState = {
     deletefrommatrix(sprite,destroy) {
         var y = sprite.matrixpos[0];
         var x = sprite.matrixpos[1];
-        this.matrix[y][x] = undefined;
+        this.matrix[y][x] = [,];
         console.log(sprite.children.length);
         var i = 0,lunghezza = sprite.children.length;
         
         while(i<lunghezza) { //cicla in base al numero originale di figli
             if(destroy){
-                this.matrix[y + (sprite.children[0].position.y / 32)][x+(sprite.children[0].position.x / 32)] = undefined;
+                this.matrix[y + (sprite.children[0].position.y / 32)][x+(sprite.children[0].position.x / 32)] = [,];
                 sprite.children[0].destroy();
             } else{
-                this.matrix[y + (sprite.children[i].position.y / 32)][x+(sprite.children[i].position.x / 32)] = undefined;
+                this.matrix[y + (sprite.children[i].position.y / 32)][x+(sprite.children[i].position.x / 32)] = [,];
             }
             i++;
         }
