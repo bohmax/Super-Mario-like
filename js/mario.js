@@ -1,28 +1,28 @@
 class Mario{
     constructor(world){
-        var x = null;
-        var y = null;
         if(world != null){
-            var position = this.position(world.map);
-            var starttile = world.map.getTile(3,position);
-            x= starttile.worldX;
-            y = starttile.worldY;
-        }
-        else {
-            x = game.width/2-100; 
-            y = game.height/2;
-        }
-        this.mario = game.add.sprite(x, y, 'mario_animation', '1');
-        // Set the anchor point to the top right
-        this.mario.anchor.setTo(1, 1);
+            this.groupmario = game.add.group();
+            world.map.createFromObjects('endgame', 44, 'mario_animation', '1', true, false,this.groupmario);
+            this.mario = this.groupmario.getFirstAlive();
+            // Set the anchor point to the top right
 
-        //servono per evitare salti ripetuti o movimenti insoliti
-        this.firstjump = true;
-        this.hastouchedup = false;
-        this.isBigger = false;
-        this.isFury = false;
-        this.mario.invincibile = false;
-        this.shot = true;
+            //servono per evitare salti ripetuti o movimenti insoliti
+            this.firstjump = true;
+            this.hastouchedup = false;
+            this.isBigger = false;
+            this.isFury = false;
+            this.mario.invincibile = false;
+            this.shot = true;
+
+            game.world.add(this.mario);
+            this.mario.position.y += 32;
+            this.groupmario.destroy(false,false);
+        } else {
+            var x = game.width/2-100; 
+            var y = game.height/2;
+            this.mario = game.add.sprite(x, y, 'mario_animation', '1');
+        }
+        this.mario.anchor.setTo(1, 1);
     }
 
     setPosition(width, height){
@@ -251,7 +251,7 @@ class Mario{
                     this.mario.time = false;
                 },this);
             }
-            
+
             amb.sounds.play('fireball')
 
             this.shot = false;

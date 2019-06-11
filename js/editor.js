@@ -6,10 +6,12 @@ var editorState = {
         this.objselected = null; //indica l'oggetto che deve essere selezionato per la selezione rapida
         this.multiobjselected = null; //indica l'oggetto per la selezione multipla
         this.matrix = [];
-        for (var i = 0; i < 16; i++) //numero delle  colonne
-            this.matrix[i] = new Array(500).fill([,]); //numero di righe 
+        for (var i = 0; i < 16; i++){ //numero delle  colonne
+            this.matrix[i] = [];
+            for(j=0; j<499;j++)//numero di righe
+                this.matrix[i][j] = [undefined,undefined];
             //il primo parametro indica un oggetto che non sia il paesaggio, il secondo il paesaggio
-
+        }
 
         this.disegno = game.add.group();
         this.oggetti = game.add.group();
@@ -373,6 +375,7 @@ var editorState = {
         //utilizzato per sapere se la coordinata di x va normalizzata
         var xposition = sprite.arr[0] * scalax;
         if(sprite.placed) xposition -= this.disegno.position.x * -1;
+        console.log(sprite.arr[3] - sprite.arr[1])
         this.drawMarker(this.marker, xposition, sprite.arr[1] * scalay, (sprite.arr[2] - sprite.arr[0] + sprite.startsWidth) * scalax, (sprite.arr[3] - sprite.arr[1] + sprite.startsHeight) * scalay);
         sprite.firsttouch = true;
         this.marker.x = sprite.position.x;
@@ -603,11 +606,32 @@ var editorState = {
         if(sprite.matrixpos != undefined){
             this.deletefrommatrix(sprite,false);
         }
-        this.matrix[y][x] = [undefined,sprite];
+        //inserimento effettivo
+        if(sprite.type === 2){
+            this.matrix[y][x][1] = sprite;
+            if( this.matrix[y][x][0] != undefined ){
+                this.disegno.removeChild(this.matrix[y][x][0]);
+                this.disegno.addChild(this.matrix[y][x][0]);
+            }
+        }else {
+            if(this.matrix[y][x][0] != undefined){
+                console.log(this.matrix[y][x][0].parent==this.disegno)
+                this.disegno.removeChild(this.matrix[y][x][0]);
+            }
+            this.matrix[y][x][0] = sprite
+        }
         sprite.matrixpos = [y,x];
-        console.log(sprite.matrixpos);
         sprite.children.forEach(function (item) {
-            this.matrix[y + (item.position.y / 32)][x+(item.position.x / 32)] = [undefined,item];
+            var y1 = y + (item.position.y / 32),x1 = x+(item.position.x / 32);
+            console.log(sprite.type);
+            if(sprite.type === 2){
+                this.matrix[y1][x1][1] = item;
+                if( this.matrix[y1][x1][0] != undefined ){
+                    this.disegno.removeChild(this.matrix[y1][x1][0]);
+                    this.disegno.addChild(this.matrix[y1][x1][0]);
+                }   
+            }else //un elemento che non è lo sfondo deve essere inserito e devo eliminare quello che c'era predentemente
+                this.matrix[y1][x1][0] = sprite;
         },this);
         
         //controlla se il puntatore si trova sopra la sprite
@@ -631,23 +655,37 @@ var editorState = {
     deletefrommatrix(sprite,destroy) {
         var y = sprite.matrixpos[0];
         var x = sprite.matrixpos[1];
-        this.matrix[y][x] = [,];
+        if(sprite.type === 2)
+            this.matrix[y][x][1] = undefined;
+        else
+            this.matrix[y][x][0] = undefined;
+        
         console.log(sprite.children.length);
         var i = 0,lunghezza = sprite.children.length;
-        
         while(i<lunghezza) { //cicla in base al numero originale di figli
             if(destroy){
-                this.matrix[y + (sprite.children[0].position.y / 32)][x+(sprite.children[0].position.x / 32)] = [,];
+                var y1 = y + (sprite.children[0].position.y / 32), x1 = x+(sprite.children[0].position.x / 32);
+                if(sprite.type === 2)
+                    this.matrix[y1][x1][1] = undefined;
+                else
+                    this.matrix[y1][x1][0] = undefined;
+                
                 sprite.children[0].destroy();
-            } else{
-                this.matrix[y + (sprite.children[i].position.y / 32)][x+(sprite.children[i].position.x / 32)] = [,];
+            } 
+            else {
+                var y1 = y + (sprite.children[i].position.y / 32), x1 = x+(sprite.children[i].position.x / 32);
+                if(sprite.type === 2)
+                    this.matrix[y1][x1][1] = undefined;
+                else
+                    this.matrix[y1][x1][0] = undefined;
+                
             }
             i++;
         }
     },
 
     objselectionsupport(){
-        this.objselected.alpha = 0.5; 
+        this.objselected.alpha = 0.5;
         this.marker.clear();
         this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
         this.drawMarker(this.marker, this.objselected.arr[0] * 0.5, this.objselected.arr[1] * 0.5, (this.objselected.arr[2] - this.objselected.arr[0] + this.objselected.startsWidth) * 0.5, (this.objselected.arr[3] - this.objselected.arr[1] + this.objselected.startsHeight) * 0.5, 0xffffff, 0.5);

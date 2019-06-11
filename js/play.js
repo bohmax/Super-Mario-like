@@ -1,4 +1,8 @@
 var playState = {
+    
+    init: function(map) {
+        this.mapname = map;
+    },
 
     create: function() {
 
@@ -7,7 +11,7 @@ var playState = {
         this.labels.draw();
 
         //array che contiene il punto di spwan dei nemici
-        this.map = new Map();
+        this.map = new Map(this.mapname);
         this.enemypoint = this.map.map.objects.enemy;
         //indica la posizione dell'ultimo nemico spawnato
         this.supermario = new Mario(this.map);
@@ -322,7 +326,7 @@ var playState = {
             } else{
                 game.global.life=-1; 
             }
-            game.state.start('loadplay');
+            game.state.start('loadplay',true,false,this.mapname);
         }
     },
 

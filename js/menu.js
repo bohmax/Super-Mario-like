@@ -9,7 +9,7 @@ var menuState = {
         this.labels = new Label();
         this.labels.draw();
         
-        this.map = new Map();
+        this.map = new Map('map');
         
         var bestscore = 0;
         if(game.global.bestscore<game.global.score){
@@ -59,6 +59,6 @@ var menuState = {
     
     start: function(scritta) {
         // loading the game 
-        game.state.start(scritta.level);
+        game.state.start(scritta.level,true, false,'map');
     }
 };

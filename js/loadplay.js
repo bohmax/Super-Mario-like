@@ -1,7 +1,10 @@
 var loadplayState = {
+    
+    init: function(map) {
+        this.mapname = map;
+    },
 
     create: function() {
-
         game.stage.backgroundColor = '#000000';
         this.labels = new Label();
         this.labels.draw();
@@ -38,7 +41,7 @@ var loadplayState = {
     },
 
     update: function() { // No changes
-        if(this.i == 240){
+        if(this.i == 120){
             this.start();
         }
         this.i++;
@@ -48,7 +51,7 @@ var loadplayState = {
     start: function() {
         // Start the actual game 
         if(game.global.life > 0){
-            game.state.start('play');
+            game.state.start('play', true, false, this.mapname);
         } else{
             game.state.start('menu');
         }

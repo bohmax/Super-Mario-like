@@ -1,7 +1,7 @@
 class Map{
-    constructor(){
+    constructor(map){
         // Create the tilemap
-        this.map = game.add.tilemap('map');
+        this.map = game.add.tilemap(map);
         // Add the tileset to the map
         this.map.addTilesetImage('tileset');
         // Create the layer by specifying the name of the Tiled layer
