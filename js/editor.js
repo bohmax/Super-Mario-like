@@ -67,6 +67,7 @@ var editorState = {
         var special = game.add.text(terrain.width+15, 0, 'SPECIALI', game.global.style);
         var sfondo = game.add.text(special.position.x + special.width+15, 0, 'SFONDO', game.global.style);
         var personaggi = game.add.text(sfondo.position.x + sfondo.width+15, 0, 'ABITANTI', game.global.style);
+        console.log(terrain)
         
 
         //terreno
@@ -170,7 +171,7 @@ var editorState = {
             item.notResize = false; //la sprite non deve essere ridisegnata
             item.placed = false; //indica che la sprite è stata posizionata almeno una volta nella griglia
             item.duplicate = true; //serve per sapere se si tratta di una sprite da poter duplicare opure no
-            if ((item.arr[2] - item.arr[0] + item.startsWidth) === 32 && (item.arr[3] - item.arr[1] + item.startsHeight) === 32) //se la dimesione della aprite è 32*32
+            if ((item.arr[2] - item.arr[0] + item.startsWidth) === 32 && (item.arr[3] - item.arr[1] + item.startsHeight) === 32) //se la dimesione della sprite è 32*32
                 item.multirow = true; //allora può essere abilitata la selezione multilinea
         },this);
 
@@ -180,6 +181,10 @@ var editorState = {
         mario.duplicate = false;
         mario.multirow = false;
         queen.duplicate = false;
+        queen.addChild(game.add.sprite(0,32));
+        tarta.addChild(game.add.sprite(0,32));
+        this.queen = queen;
+        this.mario = mario;
     },
 
     drawButton: function(x,y,text,fun){
@@ -269,7 +274,6 @@ var editorState = {
             color =  0xffffff;
             alpha = 1;
         }
-
         grafica.lineStyle(3, color, alpha);
         grafica.rect = grafica.drawRect(x, y, widht, height);
         grafica.visible = false;
@@ -308,7 +312,7 @@ var editorState = {
                 if (this.multiobjselected != null && this.objdrag == null) { //per sapere se deve applicare la selezione multilinea
                     this.marker.clear();
                     this.drawMarker(this.marker, 0, 0, 16 * 16, 16, 0xffffff);
-                    if (game.input.activePointer.leftButton.isDown) {
+                    if (game.input.activePointer.leftButton.isDown && game.input.activePointer.leftButton.duration<1) {
                         for (var i = 0; i < 16; i++) { //duplico l'oggetto e lo inserisco 
                             let duplicato = this.duplicate(this.multiobjselected);
                             duplicato.scale.setTo(0.5, 0.5);
@@ -375,7 +379,6 @@ var editorState = {
         //utilizzato per sapere se la coordinata di x va normalizzata
         var xposition = sprite.arr[0] * scalax;
         if(sprite.placed) xposition -= this.disegno.position.x * -1;
-        console.log(sprite.arr[3] - sprite.arr[1])
         this.drawMarker(this.marker, xposition, sprite.arr[1] * scalay, (sprite.arr[2] - sprite.arr[0] + sprite.startsWidth) * scalax, (sprite.arr[3] - sprite.arr[1] + sprite.startsHeight) * scalay);
         sprite.firsttouch = true;
         this.marker.x = sprite.position.x;
@@ -484,10 +487,6 @@ var editorState = {
             else {
                 game.add.tween(obj.position).to({ x: obj.startx, y: obj.starty }, 200, null, true).onComplete.add(
                     function () {
-                        //obj.inputEnabled = true;
-                        //console.log('input x ' + game.input.x + ' input y ' + game.input.y);
-                        //console.log((obj.position.x+obj.arr[0]*obj.scale.x) + ' ' + (obj.position.x+(obj.arr[2]+obj.width)*obj.scale.x));
-                        //console.log((obj.position.y+obj.arr[1]*obj.scale.y) + ' ' + ((obj.position.y+(obj.arr[3])*obj.scale.y)+obj.height));
                         if (game.input.x >= (obj.position.x + obj.arr[0] * obj.scale.x) && game.input.x <= (obj.position.x + obj.arr[2] * obj.scale.x + obj.width)
                             && game.input.y >= (obj.position.y + obj.arr[1] * obj.scale.y) && game.input.y <= (obj.position.y + obj.arr[3] * obj.scale.y) + obj.height)
                             this.spriteOver(obj);
@@ -503,10 +502,14 @@ var editorState = {
                 this.deletefromgrid(obj);
             }
             else {
-                
                 obj.position.x = this.marker.x;
                 obj.position.y = this.marker.y;
-                game.add.tween(obj.position).to({ x: obj.startx, y: obj.starty }, 200, null, true); //se non era presente nella griglia torna alla posi di partenza
+                var tween = game.add.tween(obj.position).to({ x: obj.startx, y: obj.starty }, 200, null, true); //se non era presente nella griglia torna alla posi di partenza
+                tween.onComplete.add(function(item){
+                    console.log(obj.type)
+                    if(obj.type === 3)
+                        obj.scale.setTo(1,1);
+                },this);
             }
             this.marker.clear();
             this.drawMarker(this.marker, 0, 0, 16, 16, 0xffffff);
@@ -517,7 +520,6 @@ var editorState = {
 
     muosedown: function (obj, pointer) {
         //double click
-        console.log(obj.duplicate)
         if (pointer.msSinceLastClick < game.input.doubleTapRate && obj.multirow) {
             console.log('Double clicked sprite: ', obj.key);
             this.multiobjselected = obj;
@@ -527,7 +529,6 @@ var editorState = {
             //this.drawMarker(this.marker, 0, 0, 16*16, 16, 0xffffff);
         } 
         else if (obj.outposition){ // se il click non avviene nella griglia
-            console.log("ci sono");
             //imposta la sprite
             this.multiobjselected = null;
             if (this.objselected != null){ this.objselected.destroy(); this.objselected = null;}
@@ -545,7 +546,6 @@ var editorState = {
     },
 
     muoseup: function (obj, pointer, isover) { //viene attivato solo se non era stato draggato
-        console.log("hei")
         //var prova = this.duplicate(obj);
         //prova.position.x = 10;
         //this.objselected = obj;
@@ -615,12 +615,26 @@ var editorState = {
             }
         }else {
             if(this.matrix[y][x][0] != undefined){
-                console.log(this.matrix[y][x][0].parent==this.disegno)
-                this.disegno.removeChild(this.matrix[y][x][0]);
+                //console.log(this.matrix[y][x][0].parent==this.disegno)
+                console.log(this.matrix[y][x][0])
+                var destroy = this.matrix[y][x][0];
+                if(!destroy.duplicate){ // nel caso sia mario o la principessa devo spostarli
+                    destroy.position.x = destroy.startx;
+                    destroy.position.y = destroy.starty;
+                    destroy.scale.setTo(1,1);
+                    destroy.outposition = true;
+                    destroy.placed = false;
+                    game.world.addChild(destroy);
+                    destroy.kill();
+                } else {
+                    this.disegno.removeChild(destroy);
+                    destroy.destroy();   
+                }
             }
             this.matrix[y][x][0] = sprite
         }
         sprite.matrixpos = [y,x];
+        console.log(sprite.children.length)
         sprite.children.forEach(function (item) {
             var y1 = y + (item.position.y / 32),x1 = x+(item.position.x / 32);
             console.log(sprite.type);
@@ -635,13 +649,11 @@ var editorState = {
         },this);
         
         //controlla se il puntatore si trova sopra la sprite
+        this.marker.clear();
+        this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
         if (game.input.x >= (sprite.position.x + sprite.arr[0] * 0.5) && game.input.x <= (sprite.position.x + sprite.arr[2] * 0.5 + sprite.width)
-            && game.input.y >= (sprite.position.y + sprite.arr[1] * 0.5) && game.input.y <= (sprite.position.y + sprite.arr[3] * 0.5) + sprite.height)
-            this.spriteOver(sprite);
-        else {
-            this.marker.clear();
-            this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
-        }
+            && game.input.y >= (sprite.position.y + sprite.arr[1] * 0.5) && game.input.y <= (sprite.position.y + sprite.arr[3] * 0.5) + sprite.height){
+            this.spriteOver(sprite);}
         console.log(this.matrix);
     },
 
@@ -713,6 +725,10 @@ var editorState = {
             this.objdrag.position.y = game.input.y - this.objdrag.height / 2;
 
         }
+        if(!this.queen.alive)
+            this.queen.revive();
+        else if(!this.mario.alive)
+            this.mario.revive();
     },
 
 };
