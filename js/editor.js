@@ -27,7 +27,7 @@ var editorState = {
 
         this.bottoni.add(this.drawButton(10,this.griglia.starty-35,'HELP',this.help)).menu = this.helper;
         this.bottoni.add(this.drawButton(game.camera.width/2-150/2,this.griglia.starty-35,'INDIETRO',this.quit));
-        this.bottoni.add(this.drawButton(game.camera.width-115,this.griglia.starty-35,'GIOCA',this.quit));
+        this.bottoni.add(this.drawButton(game.camera.width-115,this.griglia.starty-35,'GIOCA',this.gioca));
 
         //marcatore di disegno
         this.marker = this.drawMarker(game.add.graphics(),0,0,16,16);
@@ -35,7 +35,7 @@ var editorState = {
         //rileva movimenti e click mouse
         game.input.addMoveCallback(this.Markerfunction, this);
 
-
+        this.lasttileX = 0; //the biggest X of the tilemap
     },
 
     drawGrid: function(){
@@ -62,13 +62,11 @@ var editorState = {
     },
 
     drawObject: function(){
-        
+
         var terrain = game.add.text(0, 0, 'TERRENO', game.global.style);
         var special = game.add.text(terrain.width+15, 0, 'SPECIALI', game.global.style);
         var sfondo = game.add.text(special.position.x + special.width+15, 0, 'SFONDO', game.global.style);
         var personaggi = game.add.text(sfondo.position.x + sfondo.width+15, 0, 'ABITANTI', game.global.style);
-        console.log(terrain)
-        
 
         //terreno
         var y = terrain.height;
@@ -107,7 +105,7 @@ var editorState = {
         ground_money.type = 1;
         block.type = 1; 
         tubo_special.type = 1; 
-        
+
         //nuvola
         var nuvola_start = game.add.sprite(x-10, y,'tileset',32);
         nuvola_start.addChild(game.add.sprite(0,nuvola_start.height,'tileset',36));
@@ -455,6 +453,30 @@ var editorState = {
         this.helper.destroy();
         game.state.start('menu');
     },
+    
+    gioca: function(but) {
+        /*this.disegno.destroy(true);
+        this.oggetti.destroy(true);
+        this.bottoni.destroy(true);
+        this.marker.destroy();
+        this.helper.destroy();*/
+        
+        //creazione tilemap
+        var map = game.add.tilemap(null,32,32,this.lasttileX,15);
+        //map.addTilesetImage('tileset')
+        var layer = map.create('Tile Layer 1', 32, 32);
+        for(var i = 0; i<15;i++){
+            for(var j = 0; j<(this.lasttileX+1);j++){
+                if(this.matrix[i][j][1] != undefined){
+                    map.putTile(new Tile('Tile Layer 1',this.matrix[i][j][1].frame),i,j,'Tile Layer 1');
+                }
+            }
+        }
+        console.log(map);
+        //this.layer = this.map.create('layer', 16, 16, 56, 38);
+        game.state.start('loadplay',true,false,map);
+    },
+
 
     draggstart: function (obj, pointer, x, y) {
         //inizializza operazione
@@ -506,7 +528,6 @@ var editorState = {
                 obj.position.y = this.marker.y;
                 var tween = game.add.tween(obj.position).to({ x: obj.startx, y: obj.starty }, 200, null, true); //se non era presente nella griglia torna alla posi di partenza
                 tween.onComplete.add(function(item){
-                    console.log(obj.type)
                     if(obj.type === 3)
                         obj.scale.setTo(1,1);
                 },this);
@@ -534,7 +555,7 @@ var editorState = {
             if (this.objselected != null){ this.objselected.destroy(); this.objselected = null;}
             if(obj.duplicate){
                 this.objselected = this.duplicate(obj); //ci sono altri parametri poi da impostare, come spriteover... guardare la dragstart
-            
+
                 this.objselected.alpha = 0;
                 this.objselected.inputEnabled = false;
                 this.objselected.scale.setTo(0.5, 0.5);
@@ -598,7 +619,7 @@ var editorState = {
         sprite.position.x = posx;
         sprite.position.y = posy;
         sprite.placed = true;
-        
+
         //inserisci nella matrice
         var diff = ((this.disegno.x*-1)%16);
         var x = parseInt((posx+diff)/16);
@@ -606,6 +627,12 @@ var editorState = {
         if(sprite.matrixpos != undefined){
             this.deletefrommatrix(sprite,false);
         }
+
+        //per la dimensione della tilemap
+        if(x>this.lasttileX){
+            this.lasttileX = x;
+        }
+
         //inserimento effettivo
         if(sprite.type === 2){
             this.matrix[y][x][1] = sprite;
@@ -614,56 +641,49 @@ var editorState = {
                 this.disegno.addChild(this.matrix[y][x][0]);
             }
         }else {
-            if(this.matrix[y][x][0] != undefined){
-                //console.log(this.matrix[y][x][0].parent==this.disegno)
-                console.log(this.matrix[y][x][0])
-                var destroy = this.matrix[y][x][0];
-                if(!destroy.duplicate){ // nel caso sia mario o la principessa devo spostarli
-                    destroy.position.x = destroy.startx;
-                    destroy.position.y = destroy.starty;
-                    destroy.scale.setTo(1,1);
-                    destroy.outposition = true;
-                    destroy.placed = false;
-                    game.world.addChild(destroy);
-                    destroy.kill();
-                } else {
-                    this.disegno.removeChild(destroy);
-                    destroy.destroy();   
-                }
+            if(this.matrix[y][x][0] != undefined){ //il tipo qua è diverso da 2 quindi nulla deve essere divisibile
+                this.deletewhileinsert(y,x);
             }
             this.matrix[y][x][0] = sprite
         }
         sprite.matrixpos = [y,x];
-        console.log(sprite.children.length)
+        //console.log(sprite.children.length)
         sprite.children.forEach(function (item) {
             var y1 = y + (item.position.y / 32),x1 = x+(item.position.x / 32);
-            console.log(sprite.type);
             if(sprite.type === 2){
                 this.matrix[y1][x1][1] = item;
                 if( this.matrix[y1][x1][0] != undefined ){
                     this.disegno.removeChild(this.matrix[y1][x1][0]);
                     this.disegno.addChild(this.matrix[y1][x1][0]);
                 }   
-            }else //un elemento che non è lo sfondo deve essere inserito e devo eliminare quello che c'era predentemente
-                this.matrix[y1][x1][0] = sprite;
+            }else{ //un elemento che non è lo sfondo deve essere inserito e devo eliminare quello che c'era predentemente
+                if(this.matrix[y1][x1][0] != undefined){ //il tipo qua è diverso da 2 quindi nulla deve essere divisibile
+                    this.deletewhileinsert(y1,x1);
+                }
+                this.matrix[y1][x1][0] = item;
+            }
+            //per la dimensione della tilemap
+            if(x1>this.lasttileX){
+                this.lasttileX = x;
+            }
         },this);
-        
+
         //controlla se il puntatore si trova sopra la sprite
         this.marker.clear();
         this.drawMarker(this.marker, 0, 0, 16, 16, 0xf4e842);
         if (game.input.x >= (sprite.position.x + sprite.arr[0] * 0.5) && game.input.x <= (sprite.position.x + sprite.arr[2] * 0.5 + sprite.width)
             && game.input.y >= (sprite.position.y + sprite.arr[1] * 0.5) && game.input.y <= (sprite.position.y + sprite.arr[3] * 0.5) + sprite.height){
             this.spriteOver(sprite);}
-        console.log(this.matrix);
+        //console.log(this.matrix);
     },
 
     deletefromgrid(sprite) {
         this.disegno.removeChild(sprite);
         this.deletefrommatrix(sprite);
         sprite.destroy();
-        console.log(this.matrix,true);
+        //console.log(this.matrix,true);
     },
-    
+
     deletefrommatrix(sprite,destroy) {
         var y = sprite.matrixpos[0];
         var x = sprite.matrixpos[1];
@@ -671,7 +691,7 @@ var editorState = {
             this.matrix[y][x][1] = undefined;
         else
             this.matrix[y][x][0] = undefined;
-        
+
         console.log(sprite.children.length);
         var i = 0,lunghezza = sprite.children.length;
         while(i<lunghezza) { //cicla in base al numero originale di figli
@@ -681,7 +701,7 @@ var editorState = {
                     this.matrix[y1][x1][1] = undefined;
                 else
                     this.matrix[y1][x1][0] = undefined;
-                
+
                 sprite.children[0].destroy();
             } 
             else {
@@ -690,7 +710,7 @@ var editorState = {
                     this.matrix[y1][x1][1] = undefined;
                 else
                     this.matrix[y1][x1][0] = undefined;
-                
+
             }
             i++;
         }
@@ -714,6 +734,28 @@ var editorState = {
             duplicato.outposition = false;
             duplicato.firsttouch = false;
             this.spriteOver(duplicato);
+        }
+    },
+
+    deletewhileinsert(y,x){
+        var remove = null;
+        if(this.matrix[y][x][0].parent==this.disegno) //vuol dire che è composto da un solo elemento o che si tratta del padre di uno composto
+            remove = this.matrix[y][x][0];
+        else{ remove = this.matrix[y][x][0].parent;}
+        if(!remove.duplicate){ // nel caso sia mario o la principessa devo spostarli
+            remove.position.x = remove.startx;
+            remove.position.y = remove.starty;
+            remove.scale.setTo(1,1);
+            remove.outposition = true;
+            remove.placed = false;
+            game.world.addChild(remove);
+            var y1 = y + (remove.children[0].position.y / 32),x1 = x+(remove.children[0].position.x / 32);
+            this.matrix[remove.matrixpos[0]][remove.matrixpos[1]][0] = undefined;
+            this.matrix[y1][x1][0] = undefined;
+
+            remove.kill();
+        } else {
+            this.deletefromgrid(remove);
         }
     },
 

@@ -178,9 +178,9 @@ var playState = {
             item.angle += 1;
         });
         
-        this.enemy.forEach(function(item) {
-            game.debug.body(item);
-        });
+        //this.enemy.forEach(function(item) {
+        //    game.debug.body(item);
+        //});
 
         //------------collisioni degli oggetti---------
         game.physics.arcade.collide(this.special, this.map.layer,this.enemymove,null,this);
@@ -914,6 +914,7 @@ var playState = {
             this.enemy.setAll('animations.paused',true);
             this.fireball.setAll('body.moves',false);
             this.fireball.setAll('animations.paused',true);
+            this.fireball.destroy(true,false);
             this.countDown.pause();
             this.specialblock.forEach(function(blocco){
                 if(blocco.animations.name!=undefined)
