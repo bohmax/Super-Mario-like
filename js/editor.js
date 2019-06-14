@@ -6,7 +6,7 @@ var editorState = {
         this.objselected = null; //indica l'oggetto che deve essere selezionato per la selezione rapida
         this.multiobjselected = null; //indica l'oggetto per la selezione multipla
         this.matrix = [];
-        for (var i = 0; i < 16; i++){ //numero delle  colonne
+        for (var i = 0; i < 15; i++){ //numero delle  colonne
             this.matrix[i] = [];
             for(j=0; j<499;j++)//numero di righe
                 this.matrix[i][j] = [undefined,undefined];
@@ -93,10 +93,9 @@ var editorState = {
         moneyx12.addChild(x12);
         var ground_money = game.add.sprite(star.position.x+5+star.width, moneyx12.position.y+star.height+5,'animazione',0);
         var block = game.add.sprite(fungo.position.x+15, moneyx12.position.y+star.height+5,'tileset',4);
-        var tubo_special = game.add.sprite(block.position.x, block.position.y+block.height+5,'tileset',37);
-        tubo_special.addChild(game.add.sprite(tubo_special.width,0,'tileset',38));     
+        //var tubo_special = game.add.sprite(block.position.x, block.position.y+block.height+5,'tileset',37);
+        //tubo_special.addChild(game.add.sprite(tubo_special.width,0,'tileset',38));     
         x = sfondo.position.x;
-        tubo.addChild(game.add.sprite(fine.width,0,'tileset',39));
         fungo.type = 1; //1 rappresenta gli oggetti speciali
         vita.type = 1;
         money.type = 1;
@@ -104,7 +103,7 @@ var editorState = {
         moneyx12.type = 1;
         ground_money.type = 1;
         block.type = 1; 
-        tubo_special.type = 1; 
+        //tubo_special.type = 1; 
 
         //nuvola
         var nuvola_start = game.add.sprite(x-10, y,'tileset',32);
@@ -155,7 +154,7 @@ var editorState = {
         tarta.type = 3;
         queen.type = 3;
 
-        this.sprite  = [terra,scalini,fine,tubo,fungo,vita,money,star,moneyx12,ground_money,block,tubo_special,nuvola_start,
+        this.sprite  = [terra,scalini,fine,tubo,fungo,vita,money,star,moneyx12,ground_money,block,/*tubo_special,*/nuvola_start,
                         nuvola_middle,nuvola_end,cespuglio_start,cespuglio_middle,cespuglio_end,montagna_0,montagna_1,mario,goomba,tarta,queen];
         this.sprite.forEach(function(item){
             this.enableSpriteInput(item);
@@ -453,22 +452,39 @@ var editorState = {
         this.helper.destroy();
         game.state.start('menu');
     },
-    
+
     gioca: function(but) {
         /*this.disegno.destroy(true);
         this.oggetti.destroy(true);
         this.bottoni.destroy(true);
         this.marker.destroy();
         this.helper.destroy();*/
-        
+
         //creazione tilemap
         var map = game.add.tilemap(null,32,32,this.lasttileX,15);
-        //map.addTilesetImage('tileset')
-        var layer = map.create('Tile Layer 1', 32, 32);
+        map.addTilesetImage('tileset')
+        var layer = map.create('Tile Layer 1',500,15,32,32);
+        //diamo i nomi agli array oggetto
+        map.objects = {
+            endgame: [],
+            block: [],
+            Invisible: [],
+            Special: [],
+            enemy: [],
+        }
+        
         for(var i = 0; i<15;i++){
             for(var j = 0; j<(this.lasttileX+1);j++){
-                if(this.matrix[i][j][1] != undefined){
-                    map.putTile(new Tile('Tile Layer 1',this.matrix[i][j][1].frame),i,j,'Tile Layer 1');
+                var sprite = this.matrix[i][j][0];
+                if(sprite!=undefined ){
+                    if(sprite.parent != this.disegno) 
+                        sprite.type = sprite.parent.type;
+                    if(sprite.type === 0){
+                        map.putTile(sprite.frame,j,i,'Tile Layer 1');
+                    }   
+                }
+                else if(this.matrix[i][j][1] != undefined){
+                    map.putTile(this.matrix[i][j][1].frame,j,i,'Tile Layer 1');
                 }
             }
         }
@@ -614,6 +630,7 @@ var editorState = {
     },
 
     insertfunction(sprite,posx,posy) {
+        console.log(sprite);
         this.disegno.addChild(sprite);
         posx = (this.disegno.x * -1) + posx;
         sprite.position.x = posx;
@@ -650,21 +667,21 @@ var editorState = {
         //console.log(sprite.children.length)
         sprite.children.forEach(function (item) {
             var y1 = y + (item.position.y / 32),x1 = x+(item.position.x / 32);
-            if(sprite.type === 2){
+            if(x1>=0 && sprite.type === 2){
                 this.matrix[y1][x1][1] = item;
                 if( this.matrix[y1][x1][0] != undefined ){
                     this.disegno.removeChild(this.matrix[y1][x1][0]);
                     this.disegno.addChild(this.matrix[y1][x1][0]);
                 }   
-            }else{ //un elemento che non è lo sfondo deve essere inserito e devo eliminare quello che c'era predentemente
-                if(this.matrix[y1][x1][0] != undefined){ //il tipo qua è diverso da 2 quindi nulla deve essere divisibile
+            }else if(x1>=0){ //un elemento che non è lo sfondo deve essere inserito e devo eliminare quello che c'era predentemente
+                if(this.matrix[y1][x1][0] != undefined ){ //il tipo qua è diverso da 2 quindi nulla deve essere divisibile
                     this.deletewhileinsert(y1,x1);
                 }
                 this.matrix[y1][x1][0] = item;
             }
             //per la dimensione della tilemap
             if(x1>this.lasttileX){
-                this.lasttileX = x;
+                this.lasttileX = x1;
             }
         },this);
 
