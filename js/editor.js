@@ -83,7 +83,7 @@ var editorState = {
 
         //speciali
         var x = special.position.x;
-        var fungo = game.add.sprite(10 + x, y+5,'animazione',9);
+        var fungo = game.add.sprite(10 + x, y+16,'animazione',9);
         var vita = game.add.sprite(15 + x + fungo.width, fungo.position.y,'animazione',10);
         var money = game.add.sprite(5 + vita.position.x + vita.width, fungo.position.y,'animazione',0);
         var star = game.add.sprite(fungo.position.x+15, fungo.position.y+fungo.height+5,'animazione',15);
@@ -320,8 +320,15 @@ var editorState = {
                         this.marker.clear();
                         this.drawMarker(this.marker, 0, 0, 16, 16, 0xffffff);
                     }
-                } else if (this.objselected != null)// se devo prevedere la selezione singola
-                    this.objselectionsupport();
+                } else if (this.objselected != null){
+                    if(this.griglia.endy >= (this.marker.y + (this.objselected.arr[3] - this.objselected.arr[1] + this.objselected.startsHeight) * 0.5)) //se la sprite da inserire non sfora la griglia)// se devo prevedere la selezione singola
+                        this.objselectionsupport();
+                    else{
+                        this.objselected.alpha = 0.5;
+                        this.objselected.position.x = this.marker.x;
+                        this.objselected.position.y = this.marker.y;
+                    }
+                }
             }
             else {
                 // se devo nascondere la selezione singola
@@ -472,7 +479,7 @@ var editorState = {
             Special: [],
             enemy: [],
         }
-        
+
         for(var i = 0; i<15;i++){
             for(var j = 0; j<(this.lasttileX+1);j++){
                 var sprite = this.matrix[i][j][0];
@@ -492,7 +499,6 @@ var editorState = {
         //this.layer = this.map.create('layer', 16, 16, 56, 38);
         game.state.start('loadplay',true,false,map);
     },
-
 
     draggstart: function (obj, pointer, x, y) {
         //inizializza operazione
@@ -610,6 +616,15 @@ var editorState = {
         duplicate.type = sprite.type;
         return duplicate;
     },
+    
+    fromMatrixObjectToTileObject(sprite){
+        //console.log({gid: 1, height: 32, name: "",properties: {coin: 1, object: true},type: "",visible: true,width: 32,x: 512,y: 320});
+        switch(sprite.type) {
+            case 1:
+                //yyeees
+                break;
+        }
+    },
 
     minmax(arr){
         //rappresentano rispettivamente il minimo da cui partire di x e y e la coo larghezza e coo altezza
@@ -630,7 +645,6 @@ var editorState = {
     },
 
     insertfunction(sprite,posx,posy) {
-        console.log(sprite);
         this.disegno.addChild(sprite);
         posx = (this.disegno.x * -1) + posx;
         sprite.position.x = posx;
@@ -661,23 +675,25 @@ var editorState = {
             if(this.matrix[y][x][0] != undefined){ //il tipo qua è diverso da 2 quindi nulla deve essere divisibile
                 this.deletewhileinsert(y,x);
             }
-            this.matrix[y][x][0] = sprite
+            this.matrix[y][x][0] = sprite;
         }
         sprite.matrixpos = [y,x];
-        //console.log(sprite.children.length)
+        console.log(sprite.children.length)
         sprite.children.forEach(function (item) {
             var y1 = y + (item.position.y / 32),x1 = x+(item.position.x / 32);
-            if(x1>=0 && sprite.type === 2){
-                this.matrix[y1][x1][1] = item;
-                if( this.matrix[y1][x1][0] != undefined ){
-                    this.disegno.removeChild(this.matrix[y1][x1][0]);
-                    this.disegno.addChild(this.matrix[y1][x1][0]);
-                }   
-            }else if(x1>=0){ //un elemento che non è lo sfondo deve essere inserito e devo eliminare quello che c'era predentemente
-                if(this.matrix[y1][x1][0] != undefined ){ //il tipo qua è diverso da 2 quindi nulla deve essere divisibile
-                    this.deletewhileinsert(y1,x1);
+            if(x1>=0){
+                if(sprite.type === 2){
+                    this.matrix[y1][x1][1] = item;
+                    if( this.matrix[y1][x1][0] != undefined ){
+                        this.disegno.removeChild(this.matrix[y1][x1][0]);
+                        this.disegno.addChild(this.matrix[y1][x1][0]);
+                    }   
+                }else{ //un elemento che non è lo sfondo deve essere inserito e devo eliminare quello che c'era predentemente
+                    if(this.matrix[y1][x1][0] != undefined ){ //il tipo qua è diverso da 2 quindi nulla deve essere divisibile
+                        this.deletewhileinsert(y1,x1);
+                    }
+                    this.matrix[y1][x1][0] = item;
                 }
-                this.matrix[y1][x1][0] = item;
             }
             //per la dimensione della tilemap
             if(x1>this.lasttileX){
@@ -766,10 +782,12 @@ var editorState = {
             remove.outposition = true;
             remove.placed = false;
             game.world.addChild(remove);
-            var y1 = y + (remove.children[0].position.y / 32),x1 = x+(remove.children[0].position.x / 32);
+            if(remove.children.length>0){
+                var y1 = y + (remove.children[0].position.y / 32),x1 = x+(remove.children[0].position.x / 32);
+                this.matrix[y1][x1][0] = undefined;
+            }
             this.matrix[remove.matrixpos[0]][remove.matrixpos[1]][0] = undefined;
-            this.matrix[y1][x1][0] = undefined;
-
+            remove.matrixpos = undefined;
             remove.kill();
         } else {
             this.deletefromgrid(remove);
