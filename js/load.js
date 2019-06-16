@@ -6,6 +6,7 @@ var loadState = {
         game.load.atlas('mario_animation', 'assets/mario_animation.png', 'assets/mario_animation.json',null,Phaser.Loader.TEXTURE_ATLAS_JSON_HASH); 
         game.load.atlas('tileset', 'assets/tileset.png','assets/tileset.json',null,Phaser.Loader.TEXTURE_ATLAS_JSON_HASH); 
         game.load.tilemap('map', 'assets/mappe/map.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.tilemap('underworld', 'assets/mappe/underworld.json', null, Phaser.Tilemap.TILED_JSON);
         
         game.load.image('logo', 'assets/logo.png');
         
@@ -37,6 +38,6 @@ var loadState = {
 
         
         
-        game.state.start('editor');
+        game.state.start('menu');
     }
 };

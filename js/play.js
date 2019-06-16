@@ -1,175 +1,247 @@
 var playState = {
-    
-    init: function(map) {
+
+    init: function(map,backcolor,memory,afterscenechange,x,y) {
+        console.log(map)
         this.mapname = map;
+        if(backcolor!=undefined)
+            this.backcolor = backcolor;
+        else this.backcolor = '#3498db';
+        if(afterscenechange != undefined){ //variabile che mi indica se devo solo spostare mario
+            this.map.map.destroy();
+            this.map.layer.destroy();
+            if(afterscenechange)
+                this.moveoncreate = true;
+            else this.moveoncreate = false;
+            this.postox = x;
+            this.postoy = y;
+            this.specialblock.setAll('alpha', 1);
+        } 
+        else if(memory != undefined){ //variabile che mi indica se devo inizializzare tutto
+            this.memory = true;
+            this.map.map.destroy();
+            this.map.layer.destroy();
+        } else this.memory = false;
     },
 
     create: function() {
 
-        game.stage.backgroundColor = '#3498db';
-        this.labels = new Label();
-        this.labels.draw();
+        game.stage.backgroundColor = this.backcolor;
 
         //array che contiene il punto di spwan dei nemici
         this.map = new Map(this.mapname);
-        this.enemypoint = [...this.map.map.objects.enemy];
-        //indica la posizione dell'ultimo nemico spawnato
-        this.supermario = new Mario(this.map);
-        this.mario = this.supermario.mario;
+        if(!this.memory){
+            this.labels = new Label();
+            this.labels.draw();
+            this.enemypoint = [...this.map.map.objects.enemy];
+            //indica la posizione dell'ultimo nemico spawnato
+            this.supermario = new Mario(this.map);
+            this.mario = this.supermario.mario;
 
-        //gravity & movements animation
-        this.supermario.gravity();
-        this.supermario.animation();
-        this.labels.followcamera();
+            //gravity & movements animation
+            this.supermario.gravity();
+            this.supermario.animation();
+            this.labels.followcamera();
 
-        this.cursor = game.input.keyboard.createCursorKeys();
-        this.a = {a: game.input.keyboard.addKey(Phaser.Keyboard.A)};
+            this.cursor = game.input.keyboard.createCursorKeys();
+            this.a = {a: game.input.keyboard.addKey(Phaser.Keyboard.A)};
 
-        //queste variabili servono per far premere nuovamente all'utente il pulsante per saltare, 
-        //in modo da evitare salti multipli consecutivi
-        this.supermario.isjumping = true;
-        this.release = false;
+            //queste variabili servono per far premere nuovamente all'utente il pulsante per saltare, 
+            //in modo da evitare salti multipli consecutivi
+            this.supermario.isjumping = true;
+            this.release = false;
 
-        //gruppo dei blocchi col punto interrogativo
-        this.specialblock = game.add.group();
-        //gruppo dei blocchi su cui era presente il punto interrogativo
-        this.discoveredblock = game.add.group();
-        //gruppo dei mattoncini
-        this.block = game.add.group();
-        //gruppo usato per eleminare gli oggetti che escono a sinistra dalla visuale dal giocatore
-        this.extraobject = game.add.group();
-        //gruppo usato per memorizzare gli oggetti come i funghi attualmente presenti in gioco
-        this.special = game.add.group();
-        //gruppo usato per immagazzinare i nemici
-        this.enemy = game.add.group();
-        //gruppo usato per reciclare gli oggetti già utilizzati
-        this.ricicla = game.add.group();
-        //gruppo per inserire temporaneamente oggetti
-        this.temporaneo = game.add.group();
-        //gruppo in cui sono inserite le sfere di fuoco di mario
-        this.fireball = game.add.group();
-        //gruppo usato quando si distrugge un blocco
-        this.rotate = game.add.group();
-        this.temp = game.add.group();
-        this.tempenem = game.add.group();
-        this.todelete = game.add.group();
-        this.toTween = game.add.group();
-        this.getqueen = game.add.group();
+            //gruppo dei blocchi col punto interrogativo
+            this.specialblock = game.add.group();
+            //gruppo dei blocchi su cui era presente il punto interrogativo
+            this.discoveredblock = game.add.group();
+            //gruppo dei mattoncini
+            this.block = game.add.group();
+            //gruppo usato per eleminare gli oggetti che escono a sinistra dalla visuale dal giocatore
+            this.extraobject = game.add.group();
+            //gruppo usato per memorizzare gli oggetti come i funghi attualmente presenti in gioco
+            this.special = game.add.group();
+            //gruppo usato per immagazzinare i nemici
+            this.transfer = game.add.group();
+            //gruppo usato per memorizzare i punti che verrano usati per cambiare la mappa
+            this.enemy = game.add.group();
+            //gruppo usato per reciclare gli oggetti già utilizzati
+            this.ricicla = game.add.group();
+            //gruppo per inserire temporaneamente oggetti
+            this.temporaneo = game.add.group();
+            //gruppo in cui sono inserite le sfere di fuoco di mario
+            this.fireball = game.add.group();
+            //gruppo usato quando si distrugge un blocco
+            this.rotate = game.add.group();
+            this.temp = game.add.group();
+            this.tempenem = game.add.group();
+            this.todelete = game.add.group();
+            this.toTween = game.add.group();
+            this.getqueen = game.add.group();
 
-        this.specialblock.enableBody = true;
-        this.discoveredblock.enableBody = true;
-        this.block.enableBody = true;
-        this.extraobject.enableBody = true;
-        this.special.enableBody = true;
-        this.temporaneo.enableBody = true;
-        this.enemy.enableBody = true;
-        this.temp.enableBody = true;
-        this.toTween.enableBody = true;
-        this.fireball.enableBody = true;
+            this.specialblock.enableBody = true;
+            this.discoveredblock.enableBody = true;
+            this.block.enableBody = true;
+            this.extraobject.enableBody = true;
+            this.special.enableBody = true;
+            this.temporaneo.enableBody = true;
+            //this.transfer.enableBody = true;
+            this.enemy.enableBody = true;
+            this.temp.enableBody = true;
+            this.toTween.enableBody = true;
+            this.fireball.enableBody = true;
 
-        game.world.sendToBack(this.temporaneo);
-        game.world.bringToTop(this.special);
-        game.world.bringToTop(this.mario);
+            game.world.sendToBack(this.temporaneo);
+            game.world.bringToTop(this.special);
+            game.world.bringToTop(this.mario);
 
-        this.map.map.createFromObjects('Special', 1, 'animazione', 0, true, false, this.specialblock);
-        this.map.map.createFromObjects('block', 5, 'animazione', 8, true, false, this.block);
-        this.map.map.createFromObjects('endgame', 43, 'animazione', 35, true, false,this.getqueen);
+            this.map.map.createFromObjects('Special', 1, 'animazione', 0, true, false, this.specialblock);
+            this.map.map.createFromObjects('block', 5, 'animazione', 8, true, false, this.block);
+            this.map.map.createFromObjects('endgame', 43, 'animazione', 35, true, false,this.getqueen);
 
-        this.specialblock.callAll('animations.add', 'animations', 'bling', [4, 5, 6, 5,4,4], 8, true);
-        this.specialblock.callAll('animations.play', 'animations', 'bling');
-        this.map.map.createFromObjects('Invisible', 1, 'animazione', 26,true,false,this.specialblock);
-        this.map.map.createFromObjects('Special', 5, 'animazione', 8, true, false, this.specialblock);
-        this.specialblock.setAll('body.immovable', true);
-        this.block.setAll('body.immovable', true);
+            if(this.map.map.objects.transfer!=undefined){
+                this.map.map.objects.transfer.forEach(function(item){
+                    var sprite = game.add.sprite(item.x,item.y-32,'animazione',37);
+                    sprite.levelname = item.levelname;
+                    this.transfer.add(sprite);
+                    game.physics.arcade.enable(sprite);
+                    sprite.body.immovable = true;
+                    sprite.body.moves = false;
+                },this);
 
-        this.queen = this.getqueen.getFirstAlive();
-        this.queen.scale.y=1;
-        this.queen.position.y -= 32;
-        game.physics.arcade.enable(this.queen);
-        this.queen.body.setSize(256,game.world.height*4,-256,-2*game.world.height); 
-
-        //per rendere i muri invisibili colpibili solo dal basso
-        this.specialblock.forEach(function(blocco){
-            if(blocco.vita){
-                blocco.body.checkCollision.up = false;
-                blocco.body.checkCollision.left = false;
-                blocco.body.checkCollision.right = false;
             }
-        }, this)
 
-        this.arraychildren = new Array(this.specialblock.children,this.block.children,this.temp.children,this.discoveredblock.children);
-        this.special.children.sort(this.sortfunction);
-        this.block.children.sort(this.sortfunction);
-        this.enemypoint.sort(this.sortfunction);
-        this.temp.children.sort(this.sortfunction);
 
-        // Create a custom timer
-        this.countDown = game.time.create(false);
+            this.specialblock.callAll('animations.add', 'animations', 'bling', [4, 5, 6, 5,4,4], 8, true);
+            this.specialblock.callAll('animations.play', 'animations', 'bling');
+            this.map.map.createFromObjects('Invisible', 1, 'animazione', 26,true,false,this.specialblock);
+            this.map.map.createFromObjects('Special', 5, 'animazione', 8, true, false, this.specialblock);
+            this.specialblock.setAll('body.immovable', true);
+            this.block.setAll('body.immovable', true);
 
-        // Set our initial event
-        this.countDown.add(Phaser.Timer.SECOND * 400, this.timeout, this);
+            this.queen = this.getqueen.getFirstAlive();
+            this.queen.scale.y=1;
+            this.queen.position.y -= 32;
+            game.physics.arcade.enable(this.queen);
+            this.queen.body.setSize(256,game.world.height*4,-256,-2*game.world.height); 
 
-        // Start the timer
-        this.countDown.start();
+            //per rendere i muri invisibili colpibili solo dal basso
+            this.specialblock.forEach(function(blocco){
+                if(blocco.vita){
+                    blocco.body.checkCollision.up = false;
+                    blocco.body.checkCollision.left = false;
+                    blocco.body.checkCollision.right = false;
+                }
+            }, this)
 
-        //imposto i muri per distruggere gli oggetti bonus
-        var left = game.add.sprite(-64, game.height,null,0,this.extraobject);
-        var bottom = game.add.sprite(-32, game.height+32,null,0,this.extraobject);
-        left.scale.y = -game.height-32;
-        bottom.scale.x = game.width+96;
-        this.hit = false;
-        this.finito = false;
-        this.end = false;
-        this.uscito = false;
-        this.extraobject.setAll('fixedToCamera', true);
-        
-        //sound
-        this.volumemusic = game.global.music;
-        if(game.global.rip_musica) this.volumemusic = 0;
-        var volumesound = game.global.sound;
-        if(game.global.rip_sound) volumesound = 0;
-        
-        this.sounds = game.add.audio('music');
-        this.musica = game.add.audio('music');
-        // Tell Phaser that it contains multiple sounds
-        this.sounds.allowMultiple = true;
-        // Split the audio. The last 2 paramters are:
-        // The start position and the duration of the sound 
-        this.sounds.addMarker('dead', 3.663, 2.682,volumesound); 
-        this.sounds.addMarker('win', 6.345, 5.524,volumesound);
-        this.sounds.addMarker('life', 11.864, 0.81,volumesound);
-        this.sounds.addMarker('spacca', 12.692, 0.512,volumesound);
-        this.sounds.addMarker('colpo_blocco', 13.220, 0.185,volumesound);
-        this.sounds.addMarker('monetina', 13.405, 0.902,volumesound);
-        this.sounds.addMarker('fireball', 14.333, 0.08,volumesound);
-        this.sounds.addMarker('scalcia', 14.444, 0.149,volumesound);
-        this.sounds.addMarker('power_up', 14.607, 0.924,volumesound);
-        this.sounds.addMarker('uscita_power_up', 15.567, 0.555,volumesound);
-        this.sounds.addMarker('jump', 16.130, 0.555,volumesound);
-        this.sounds.addMarker('power_down', 47.573, 0.784,volumesound);
-        this.sounds.addMarker('esplosione', 48.330, 0.391,volumesound);
-        this.sounds.addMarker('timeout', 48.717, 2.823,volumesound);
-        this.sounds.addMarker('starpower', 48.717, 2.823,volumesound);
+            this.arraychildren = new Array(this.specialblock.children,this.block.children,this.temp.children,this.discoveredblock.children);
+            this.special.children.sort(this.sortfunction);
+            this.block.children.sort(this.sortfunction);
+            this.enemypoint.sort(this.sortfunction);
+            this.temp.children.sort(this.sortfunction);
 
-        this.musica.addMarker('musica', 16.682, 28.739,volumesound,true);
-        this.musica.addMarker('musica_power_up', 14.607, 0.924,volumesound,false);
-        this.musica.addMarker('musica_underground', 51.540, 13.997);
-        this.musica.addMarker('musica_invincibile', 65.537, 9.491,volumesound,false);
-        this.musica.play('musica');
-        
-        game.time.advancedTiming = true;
+            // Create a custom timer
+            this.countDown = game.time.create(false);
+
+            // Set our initial event
+            this.countDown.add(Phaser.Timer.SECOND * 400, this.timeout, this);
+
+            // Start the timer
+            this.countDown.start();
+
+            //imposto i muri per distruggere gli oggetti bonus
+            var left = game.add.sprite(-64, game.height,null,0,this.extraobject);
+            var bottom = game.add.sprite(-32, game.height+32,null,0,this.extraobject);
+            left.scale.y = -game.height-32;
+            bottom.scale.x = game.width+96;
+            this.hit = false;
+            this.finito = false;
+            this.end = false;
+            this.uscito = false;
+            this.extraobject.setAll('fixedToCamera', true);
+
+            //sound
+            this.volumemusic = game.global.music;
+            if(game.global.rip_musica) this.volumemusic = 0;
+            var volumesound = game.global.sound;
+            if(game.global.rip_sound) volumesound = 0;
+
+            this.sounds = game.add.audio('music');
+            this.musica = game.add.audio('music');
+            // Tell Phaser that it contains multiple sounds
+            this.sounds.allowMultiple = true;
+            // Split the audio. The last 2 paramters are:
+            // The start position and the duration of the sound 
+            this.sounds.addMarker('dead', 3.663, 2.682,volumesound); 
+            this.sounds.addMarker('win', 6.345, 5.524,volumesound);
+            this.sounds.addMarker('life', 11.864, 0.81,volumesound);
+            this.sounds.addMarker('spacca', 12.692, 0.512,volumesound);
+            this.sounds.addMarker('colpo_blocco', 13.220, 0.185,volumesound);
+            this.sounds.addMarker('monetina', 13.405, 0.902,volumesound);
+            this.sounds.addMarker('fireball', 14.333, 0.08,volumesound);
+            this.sounds.addMarker('scalcia', 14.444, 0.149,volumesound);
+            this.sounds.addMarker('power_up', 14.607, 0.924,volumesound);
+            this.sounds.addMarker('uscita_power_up', 15.567, 0.555,volumesound);
+            this.sounds.addMarker('jump', 16.130, 0.555,volumesound);
+            this.sounds.addMarker('power_down', 47.573, 0.784,volumesound);
+            this.sounds.addMarker('esplosione', 48.330, 0.391,volumesound);
+            this.sounds.addMarker('timeout', 48.717, 2.823,volumesound);
+            this.sounds.addMarker('starpower', 48.717, 2.823,volumesound);
+
+            this.musica.addMarker('musica', 16.682, 28.739,volumesound,true);
+            this.musica.addMarker('musica_power_up', 14.607, 0.924,volumesound,false);
+            this.musica.addMarker('musica_underground', 51.540, 13.997);
+            this.musica.addMarker('musica_invincibile', 65.537, 9.491,volumesound,false);
+            this.musica.play('musica');
+
+            game.time.advancedTiming = true;
+        } 
+        else if(this.moveoncreate == undefined){
+            var mariocopy = this.map.map.objects.endgame;
+            //game.world.add(this.mario);
+            this.mario.position.x = mariocopy[0].x;
+            this.mario.position.y = mariocopy[0].y+32;
+            var monete = this.map.map.objects.coin;
+            this.blocco1 = game.add.group();
+            this.coin = game.add.group();
+            this.blocco1.enableBody = true;
+            this.coin.enableBody = true;
+            var transfer = this.map.map.objects.transfer;
+            this.map.map.createFromObjects('coin', 51, 'animazione', 0, true, false, this.coin);
+            this.map.map.createFromObjects('blocco', 12, 'animazione', 39, true, false, this.blocco1);
+            this.coin.callAll('animations.add', 'animations', 'flip', [0, 1, 2, 3], 20, true);
+            this.blocco1.setAll('body.immovable', true);
+            this.specialblock.setAll('alpha', 0);
+            transfer.forEach(function(item){
+                var sprite = game.add.sprite(item.x,item.y-32,'animazione',38);
+                sprite.PosX = item.posX;
+                sprite.PosY = item.posY;
+                this.transfer.add(sprite);
+                game.physics.arcade.enable(sprite);
+                sprite.body.immovable = true;
+                sprite.body.moves = false;
+            },this);
+        } else {
+            var mariocopy = this.map.map.objects.endgame;
+            //game.world.add(this.mario);
+            this.mario.position.x = this.postox;
+            this.mario.position.y = this.postoy;
+        }
 
     },
-    
+
     /*render: function() {
         //game.debug.text(game.time.fps, 2, 14, "#00ff00");
         //game.debug.soundInfo(this.sounds);
         //game.debug.body(this.mario);
         game.debug.body(this.queen);
-        
+
         //this.enemy.forEach(function(item) {
         //    game.debug.body(item);
         //});
+
+        this.transfer.forEach(function(item) {
+            game.debug.body(item);
+        });
     },*/
 
     update: function() {
@@ -227,6 +299,31 @@ var playState = {
         game.physics.arcade.overlap(this.mario, this.queen,this.endgame,null,this);
         game.physics.arcade.overlap(this.todelete, this.extraobject, 
                                     function(r,s){console.log('delete from world');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
+        if(this.memory){//se mi trovo nel livello sotteraneo
+            game.physics.arcade.collide(this.mario, this.blocco1);
+            game.physics.arcade.overlap(this.mario, this.coin,function(mario,coin){
+                mario.body.touching.up=false;
+                this.sounds.play('monetina');
+                this.pointtext(coin.position.x,coin.position.y,200);
+                coin.kill();
+                this.ricicla.add(coin);
+            },null,this);
+            game.physics.arcade.collide(this.mario, this.transfer,function(mario,altro){
+                if(this.cursor.right.isDown){
+                    var x = altro.PosX;
+                    var y = altro.PosY;
+                    game.state.start('play', false, false, 'map','#3498db',false,true,x,y);
+            }
+            },null,this); 
+        } else {
+            game.physics.arcade.collide(this.mario, this.transfer,function(mario,altro){
+            if(mario.position.x-32>altro.position.x+16 && mario.position.x-32 < altro.position.x+38){
+                if(this.cursor.down.isDown){
+                    game.state.start('play', false, false, 'underworld','#000000',true);
+                }
+            }
+            },null,this);                       
+        }
         //--------------------------------------------
 
         if(!this.stop){
@@ -307,7 +404,8 @@ var playState = {
         this.discoveredblock.destroy();
         this.block.destroy();        
         this.extraobject.destroy();        
-        this.special.destroy();       
+        this.special.destroy();
+        this.transfer.destroy();
         this.enemy.destroy();       
         this.ricicla.destroy();
         this.fireball.destroy();
@@ -673,7 +771,7 @@ var playState = {
                     },this);
                     this.musica.play('musica_power_up').onStop.addOnce(function(){ 
                         this.musica.play('musica_invincibile').onStop.addOnce(
-                        function(){this.musica.play('musica');},this);
+                            function(){this.musica.play('musica');},this);
                     },this);
                 }
             }

@@ -14,7 +14,9 @@ class Map{
 
         // Enable collisions for the grounnd tile
         this.map.setCollisionBetween(1,7);
+        this.map.setCollisionBetween(11,13);
         this.map.setCollisionBetween(38,41);
+        this.map.setCollisionBetween(44,49);
     }
 
 }
