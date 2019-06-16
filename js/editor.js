@@ -104,6 +104,7 @@ var editorState = {
         ground_money.type = 1;
         block.type = 1; 
         //tubo_special.type = 1; 
+        this.moneyposy = money.position.y; //usato quando devo creare la tilemap
 
         //nuvola
         var nuvola_start = game.add.sprite(x-10, y,'tileset',32);
@@ -461,11 +462,8 @@ var editorState = {
     },
 
     gioca: function(but) {
-        /*this.disegno.destroy(true);
-        this.oggetti.destroy(true);
-        this.bottoni.destroy(true);
-        this.marker.destroy();
-        this.helper.destroy();*/
+        if(!this.mario.placed || !this.queen.placed)
+            return;
 
         //creazione tilemap
         var map = game.add.tilemap(null,32,32,this.lasttileX,15);
@@ -486,17 +484,23 @@ var editorState = {
                 if(sprite!=undefined ){
                     if(sprite.parent != this.disegno) 
                         sprite.type = sprite.parent.type;
-                    if(sprite.type === 0){
+                    if(sprite.type === 0)
                         map.putTile(sprite.frame,j,i,'Tile Layer 1');
-                    }   
+                    else 
+                        this.fromMatrixObjectToTileObject(sprite,map.objects);
                 }
-                else if(this.matrix[i][j][1] != undefined){
+                if(this.matrix[i][j][1] != undefined){
                     map.putTile(this.matrix[i][j][1].frame,j,i,'Tile Layer 1');
                 }
             }
         }
-        console.log(map);
-        //this.layer = this.map.create('layer', 16, 16, 56, 38);
+
+        this.disegno.destroy(true);
+        this.oggetti.destroy(true);
+        this.bottoni.destroy(true);
+        this.marker.destroy();
+        this.helper.destroy();
+        
         game.state.start('loadplay',true,false,map);
     },
 
@@ -606,7 +610,7 @@ var editorState = {
         duplicate.starty = sprite.starty;
         duplicate.startsWidth = sprite.startsWidth;
         duplicate.startsHeight = sprite.startsHeight;
-        duplicate.arr = this.minmax(duplicate.children);
+        duplicate.arr = sprite.arr;
         duplicate.outposition = true;
         duplicate.inputEnabled = true;
         duplicate.notResize = sprite.notResize;
@@ -616,12 +620,63 @@ var editorState = {
         duplicate.type = sprite.type;
         return duplicate;
     },
-    
-    fromMatrixObjectToTileObject(sprite){
+
+    fromMatrixObjectToTileObject(sprite, array){
         //console.log({gid: 1, height: 32, name: "",properties: {coin: 1, object: true},type: "",visible: true,width: 32,x: 512,y: 320});
         switch(sprite.type) {
-            case 1:
-                //yyeees
+            case 1: //oggetti speciali
+                switch(sprite.frame) {
+                    case 0: //money
+                        var coin = 1;
+                        var gid = 1;
+                        console.log(sprite.position)
+                        if(sprite.starty > this.moneyposy){
+                            if(sprite.children.length>0)
+                                coin = 12;
+                            gid = 5;
+                        }
+                        var elem = {gid: gid, height: 32, name: "",properties: {object: true, coin: coin},type: "",visible: true,width: 32,x: sprite.position.x*2, y: (sprite.position.y-this.griglia.starty+16)*2};
+                        array.Special.push(elem);
+                        break;
+                    case 4: //si tratta di un blocco
+                        var elem = {gid: 5, height: 32, name: "",properties: {brake: true, object: true},type: "",visible: true,width: 32,x: sprite.position.x*2, y: (sprite.position.y-this.griglia.starty+16)*2};
+                        array.block.push(elem);j
+                        break;
+                    case 9: //fungo
+                        var elem = {gid: 1, height: 32, name: "",properties: {object: true, coin: -1},type: "",visible: true,width: 32,x: sprite.position.x*2, y: (sprite.position.y-this.griglia.starty+16)*2};
+                        array.Special.push(elem);
+                        break;
+                    case 10: //vita
+                        var elem = {gid: 1, height: 32, name: "",properties: {vita: true, object: true, coin: -1},type: "",visible: true,width: 32,x: sprite.position.x*2, y: (sprite.position.y-this.griglia.starty+16)*2};
+                        array.Invisible.push(elem);
+                        break;
+                    case 15: //star
+                        var elem = {gid: 5, height: 32, name: "",properties: {stella: true, object: true, coin: -1},type: "",visible: true,width: 32,x: sprite.position.x*2, y: (sprite.position.y-this.griglia.starty+16)*2};
+                        array.Special.push(elem);
+                        break;
+                }
+                break;
+            case 3: //abitanti
+                switch (sprite.frame){
+                    case 0: //mario
+                        var elem = {gid: 44, height: 32, name: "",properties: {},type: "",visible: true,width: 32,x: sprite.position.x*2, y: (sprite.position.y-this.griglia.starty)*2+32};
+                        array.endgame.push(elem);
+                        break;
+                    case 19: //goomba
+                        var elem = {gid: 42, height: 32, name: "",properties: {goomba: true},type: "",visible: true,width: 32,x: sprite.position.x*2, y: (sprite.position.y-this.griglia.starty)*2+32};
+                        array.enemy.push(elem);
+                        break;
+                    case 22: //tarta
+                        var elem = {gid: 42, height: 32, name: "",properties: {goomba: false},type: "",visible: true,width: 32,x: sprite.position.x*2, y: (sprite.position.y-this.griglia.starty)*2+64};
+                        array.enemy.push(elem);
+                        break;
+                    case 35: //queen
+                        var elem = {gid: 43, height: 32, name: "",properties: {goomba: false},type: "",visible: true,width: 32,x: sprite.position.x*2, y: (sprite.position.y-this.griglia.starty)*2+64};
+                        array.endgame.push(elem);
+                        break;
+                }
+                if(sprite.children.lenght > 0)
+                    this.deletefromgrid(sprite);
                 break;
         }
     },
@@ -650,7 +705,7 @@ var editorState = {
         sprite.position.x = posx;
         sprite.position.y = posy;
         sprite.placed = true;
-
+        
         //inserisci nella matrice
         var diff = ((this.disegno.x*-1)%16);
         var x = parseInt((posx+diff)/16);
@@ -678,10 +733,9 @@ var editorState = {
             this.matrix[y][x][0] = sprite;
         }
         sprite.matrixpos = [y,x];
-        console.log(sprite.children.length)
         sprite.children.forEach(function (item) {
             var y1 = y + (item.position.y / 32),x1 = x+(item.position.x / 32);
-            if(x1>=0){
+            if(x1>=0 && (item.position.x % 32) === 0 && (item.position.y % 32) === 0){
                 if(sprite.type === 2){
                     this.matrix[y1][x1][1] = item;
                     if( this.matrix[y1][x1][0] != undefined ){

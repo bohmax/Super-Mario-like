@@ -6,7 +6,6 @@ class Map{
         else
             this.map = map
         // Add the tileset to the map
-        console.log(this.map)
         this.map.addTilesetImage('tileset');
         // Create the layer by specifying the name of the Tiled layer
         this.layer = this.map.createLayer('Tile Layer 1');

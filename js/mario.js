@@ -16,6 +16,8 @@ class Mario{
 
             game.world.add(this.mario);
             this.mario.position.y += 32;
+            this.mario.position.x += 32;
+            
             this.groupmario.destroy(false,false);
         } else {
             var x = game.width/2-100; 

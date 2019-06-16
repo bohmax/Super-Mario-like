@@ -53,6 +53,7 @@ var loadplayState = {
         if(game.global.life > 0){
             game.state.start('play', true, false, this.mapname);
         } else{
+            this.finito = false;
             game.state.start('menu');
         }
     }

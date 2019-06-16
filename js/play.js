@@ -12,14 +12,14 @@ var playState = {
 
         //array che contiene il punto di spwan dei nemici
         this.map = new Map(this.mapname);
-        this.enemypoint = this.map.map.objects.enemy;
+        this.enemypoint = [...this.map.map.objects.enemy];
         //indica la posizione dell'ultimo nemico spawnato
-        //this.supermario = new Mario(this.map);
-        //this.mario = this.supermario.mario;
+        this.supermario = new Mario(this.map);
+        this.mario = this.supermario.mario;
 
         //gravity & movements animation
-        //this.supermario.gravity();
-        //this.supermario.animation();
+        this.supermario.gravity();
+        this.supermario.animation();
         this.labels.followcamera();
 
         this.cursor = game.input.keyboard.createCursorKeys();
@@ -27,7 +27,7 @@ var playState = {
 
         //queste variabili servono per far premere nuovamente all'utente il pulsante per saltare, 
         //in modo da evitare salti multipli consecutivi
-        //this.supermario.isjumping = true;
+        this.supermario.isjumping = true;
         this.release = false;
 
         //gruppo dei blocchi col punto interrogativo
@@ -69,9 +69,9 @@ var playState = {
 
         game.world.sendToBack(this.temporaneo);
         game.world.bringToTop(this.special);
-        //game.world.bringToTop(this.mario);
+        game.world.bringToTop(this.mario);
 
-        /*this.map.map.createFromObjects('Special', 1, 'animazione', 0, true, false, this.specialblock);
+        this.map.map.createFromObjects('Special', 1, 'animazione', 0, true, false, this.specialblock);
         this.map.map.createFromObjects('block', 5, 'animazione', 8, true, false, this.block);
         this.map.map.createFromObjects('endgame', 43, 'animazione', 35, true, false,this.getqueen);
 
@@ -82,11 +82,11 @@ var playState = {
         this.specialblock.setAll('body.immovable', true);
         this.block.setAll('body.immovable', true);
 
-        //this.queen = this.getqueen.getFirstAlive();
-        //this.queen.scale.y=1;
-        //this.queen.position.y -= 32;
-        //game.physics.arcade.enable(this.queen);
-        //this.queen.body.setSize(256,game.world.height,-256,-game.world.height+this.queen.height); 
+        this.queen = this.getqueen.getFirstAlive();
+        this.queen.scale.y=1;
+        this.queen.position.y -= 32;
+        game.physics.arcade.enable(this.queen);
+        this.queen.body.setSize(256,game.world.height*4,-256,-2*game.world.height); 
 
         //per rendere i muri invisibili colpibili solo dal basso
         this.specialblock.forEach(function(blocco){
@@ -94,7 +94,6 @@ var playState = {
                 blocco.body.checkCollision.up = false;
                 blocco.body.checkCollision.left = false;
                 blocco.body.checkCollision.right = false;
-                //blocco.body.checkCollision.down = true;
             }
         }, this)
 
@@ -102,7 +101,7 @@ var playState = {
         this.special.children.sort(this.sortfunction);
         this.block.children.sort(this.sortfunction);
         this.enemypoint.sort(this.sortfunction);
-        this.temp.children.sort(this.sortfunction);/*
+        this.temp.children.sort(this.sortfunction);
 
         // Create a custom timer
         this.countDown = game.time.create(false);
@@ -161,13 +160,20 @@ var playState = {
         game.time.advancedTiming = true;
 
     },
-
-    update: function() {
+    
+    /*render: function() {
         //game.debug.text(game.time.fps, 2, 14, "#00ff00");
         //game.debug.soundInfo(this.sounds);
-        //game.debug.body(this.queen);
         //game.debug.body(this.mario);
-        //this.mario.speed = this.mario.body.velocity.x;
+        game.debug.body(this.queen);
+        
+        //this.enemy.forEach(function(item) {
+        //    game.debug.body(item);
+        //});
+    },*/
+
+    update: function() {
+        this.mario.speed = this.mario.body.velocity.x;
         this.toTween.forEach(function(item) {
             var pos = item.padre.position;
             item.position.x = pos.x;
@@ -177,10 +183,6 @@ var playState = {
         this.rotate.forEach(function(item) {
             item.angle += 1;
         });
-        
-        //this.enemy.forEach(function(item) {
-        //    game.debug.body(item);
-        //});
 
         //------------collisioni degli oggetti---------
         game.physics.arcade.collide(this.special, this.map.layer,this.enemymove,null,this);
@@ -188,7 +190,7 @@ var playState = {
         game.physics.arcade.collide(this.special, this.block,this.itemCollision,this.preventCollision,this);
         game.physics.arcade.collide(this.special, this.temp,this.itemCollision,this.preventCollision,this);
         game.physics.arcade.collide(this.special, this.discoveredblock);
-        //game.physics.arcade.overlap(this.mario, this.special, this.onOverlap,null,this);
+        game.physics.arcade.overlap(this.mario, this.special, this.onOverlap,null,this);
         game.physics.arcade.overlap(this.special, this.extraobject, 
                                     function(r,s){console.log('delete from special');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
         //--------------------------------------------
@@ -216,15 +218,15 @@ var playState = {
         //--------------------------------------------
 
         //------------collisioni mario---------
-        //game.physics.arcade.collide(this.mario, this.specialblock, this.onSpecialCollide,null,this);
-        //game.physics.arcade.collide(this.mario, this.block, this.onSpecialCollide,null,this);
-        //game.physics.arcade.collide(this.mario, this.discoveredblock);
-        //game.physics.arcade.collide(this.mario, this.map.layer);
-        //game.physics.arcade.collide(this.mario, this.toTween);
-        //if(!this.hit){game.physics.arcade.collide(this.mario, this.enemy,this.onEnemyCollision,null,this);}
-        //game.physics.arcade.overlap(this.mario, this.queen,this.endgame,null,this);
-        //game.physics.arcade.overlap(this.todelete, this.extraobject, 
-        //                            function(r,s){console.log('delete from world');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
+        game.physics.arcade.collide(this.mario, this.specialblock, this.onSpecialCollide,null,this);
+        game.physics.arcade.collide(this.mario, this.block, this.onSpecialCollide,null,this);
+        game.physics.arcade.collide(this.mario, this.discoveredblock);
+        game.physics.arcade.collide(this.mario, this.map.layer);
+        game.physics.arcade.collide(this.mario, this.toTween);
+        if(!this.hit){game.physics.arcade.collide(this.mario, this.enemy,this.onEnemyCollision,null,this);}
+        game.physics.arcade.overlap(this.mario, this.queen,this.endgame,null,this);
+        game.physics.arcade.overlap(this.todelete, this.extraobject, 
+                                    function(r,s){console.log('delete from world');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
         //--------------------------------------------
 
         if(!this.stop){
@@ -235,7 +237,7 @@ var playState = {
         } else if(this.end){this.playerDie();}
         this.movecamera();
 
-        /*if(!this.mario.inWorld){
+        if(!this.mario.inWorld){
             if(!this.uscito){
                 this.musica.stop();
                 this.sounds.play('dead').onMarkerComplete.add(function(){this.end = true;},this);
@@ -243,7 +245,7 @@ var playState = {
                 this.stop = true;
                 this.mario.body.velocity.x = 0;
             }
-        }*/
+        }
     },
 
     movePlayer: function() {
@@ -251,8 +253,8 @@ var playState = {
         if (this.cursor.left.isDown) {
             // Move the player to the left
             // The velocity is in pixels per second
-            //if(this.time)
-            this.supermario.moveleft();
+            if(this.time)
+                this.supermario.moveleft();
         }
         // If the right arrow key is pressed
         else if (this.cursor.right.isDown) { 
@@ -262,7 +264,7 @@ var playState = {
         // If neither the right or left arrow key is pressed
         else {
             // Stop the player
-            //this.supermario.stop();
+            this.supermario.stop();
         }
         // If the up arrow key is pressed and the player is on the ground
         if (this.cursor.up.isDown) {
@@ -275,13 +277,12 @@ var playState = {
             }
         }
         else if(!this.cursor.up.isDown){
-            //if(this.supermario.touchingdown()){
-                //this.mario.isjumping = false;
-              //  this.release = false;
-                //this.supermario.firstjump = true;
-            //} else {
-             //   this.release = true;
-            //}
+            if(this.supermario.touchingdown()){
+                this.mario.isjumping = false;
+                this.release = false;
+                this.supermario.firstjump = true;
+            } else
+                this.release = true;
         }
         if(this.a.a.isDown){
             this.supermario.spara(this);
@@ -290,9 +291,8 @@ var playState = {
 
     movecamera: function(){
         var x = game.camera.x + (game.width/2);
-        //if(this.mario.x > x ){
-          //  game.camera.x -= (-this.supermario.mario.x + x);
-        //}
+        if(this.mario.x > x )
+            game.camera.x -= (-this.supermario.mario.x + x);
     },
 
     playerDie: function() {
@@ -925,9 +925,17 @@ var playState = {
             this.finito = true;
             this.stop = true;
             this.punteggio = false;
+            mario.body.checkCollision.up = false;
+            mario.body.checkCollision.left = false;
+            mario.body.checkCollision.right = false;
         } else{
-            if(queen.position.x-32>mario.position.x)
+            if(mario.position.y >= game.world._height-5){
+                mario.body.gravity.y = 0;
+                mario.body.velocity.y = 0
+            }
+            if(queen.position.x-32>mario.position.x){
                 this.supermario.moveright();
+            }
             else{
                 if(this.mario.body.velocity.x != 0)
                     this.supermario.stop();
@@ -938,7 +946,8 @@ var playState = {
                     var text = game.add.text(game.camera.x + game.camera.width / 2, game.camera.y + game.camera.height / 2, 'grazie cisternino per aver salvato me\nla principessa Gervasin', style);
                     text.anchor.set(0.5);
                     this.punteggio = true;
-                    this.timetoend = Math.round(this.countDown.duration / Phaser.Timer.SECOND);
+                    this.timetoend = Math.ceil(this.countDown.duration / Phaser.Timer.SECOND);
+                    this.supermario.standstill();
                 } else if(this.timetoend > 0){
                     this.timetoend--;
                     this.labels.settimeend(this.timetoend);
