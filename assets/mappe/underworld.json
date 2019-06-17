@@ -23,13 +23,13 @@
                  "name":"",
                  "properties":
                     {
-                     "PosY":384,
-                     "posX":5312
+                     "PosX":5312,
+                     "PosY":384
                     },
                  "propertytypes":
                     {
-                     "PosY":"int",
-                     "posX":"int"
+                     "PosX":"int",
+                     "PosY":"int"
                     },
                  "rotation":0,
                  "type":"",

@@ -2,10 +2,11 @@ var impostazioniState = {
 
     create: function () {
         game.stage.backgroundColor = '#3498db';
-        this.map = new Map();
+        this.map = new Map('map');
         this.supermario = new Mario(this.map);
         
-        this.volumemusica = game.global.music;
+        if(game.global.rip_musica) this.volumemusica = 0;
+        else this.volumemusica = game.global.music;
         this.volumesuono = game.global.sound;
         
         this.arr=[
@@ -49,7 +50,7 @@ var impostazioniState = {
         this.sounds.addMarker('jump', 16.130, 0.555);
 
         this.musica.addMarker('musica', 16.682, 28.739);
-        this.musica.play('musica',0,game.global.music,true);
+        this.musica.play('musica',0,this.volumemusica,true);
         
     },
 

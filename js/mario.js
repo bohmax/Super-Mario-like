@@ -35,7 +35,7 @@ class Mario{
     gravity(){
         game.physics.arcade.enable(this.mario);
         this.mario.body.gravity.y = 1600;
-        this.mario.body.setSize(26,32);
+        this.mario.body.setSize(26,32,0,0);
     }
 
     animation(){
@@ -75,9 +75,9 @@ class Mario{
                 this.mario.anchor.setTo(0, 1);
             }
             if(this.mario.body.velocity.x > 80){
-                if(!this.isBigger){this.mario.body.setSize(26,32);this.mario.frame = 5;}
+                if(!this.isBigger){this.mario.body.setSize(26,32,0,0);this.mario.frame = 5;}
                 else {
-                    this.mario.body.setSize(30,64);
+                    this.mario.body.setSize(30,64,0,0);
                     if(!this.isFury) this.mario.frame = 12;
                     else this.mario.frame = 19;
                 }
@@ -85,9 +85,9 @@ class Mario{
                 this.mario.play = true;
                 if(!this.isBigger){
                     this.mario.animations.play('walk');
-                    this.mario.body.setSize(26,32);
+                    this.mario.body.setSize(26,32,0,0);
                 } else {
-                    this.mario.body.setSize(34,64);
+                    this.mario.body.setSize(34,64,0,0);
                     if(!this.isFury)
                         this.mario.animations.play('walkbig');
                     else this.mario.animations.play('walkfury');
@@ -124,9 +124,9 @@ class Mario{
                 this.mario.anchor.setTo(1, 1);
             }
             if(this.mario.body.velocity.x < -80){
-                if(!this.isBigger){this.mario.body.setSize(26,32);this.mario.frame = 5;}
+                if(!this.isBigger){this.mario.body.setSize(26,32,0,0);this.mario.frame = 5;}
                 else{
-                    this.mario.body.setSize(30,64);
+                    this.mario.body.setSize(30,64,0,0);
                     if(!this.isFury) this.mario.frame = 12;
                     else this.mario.frame = 19;
                 }
@@ -134,9 +134,9 @@ class Mario{
                 this.mario.play = true;
                 if(!this.isBigger){
                     this.mario.animations.play('walk');
-                    this.mario.body.setSize(26,32);
+                    this.mario.body.setSize(26,32,0,0);
                 } else {
-                    this.mario.body.setSize(34,64);
+                    this.mario.body.setSize(34,64,0,0);
                     if(!this.isFury) this.mario.animations.play('walkbig');
                     else this.mario.animations.play('walkfury');
                 }
@@ -217,10 +217,10 @@ class Mario{
     standstill(){
         this.fermo = true;
         if(!this.isBigger){
-            this.mario.body.setSize(26,32);
+            this.mario.body.setSize(26,32,0,0);
             this.mario.frame = 0;
         } else{
-            this.mario.body.setSize(32,64);
+            this.mario.body.setSize(32,64,0,0);
             if(!this.isFury) this.mario.frame = 7;
             else this.mario.frame = 14;
         }
@@ -232,9 +232,9 @@ class Mario{
         this.mario.play = false;
         if(!this.isBigger){
             this.mario.frame = 4;
-            this.mario.body.setSize(34,32);
+            this.mario.body.setSize(30,32,-4,0);
         } else{
-            this.mario.body.setSize(32,64);
+            this.mario.body.setSize(32,64,0,0);
             if(!this.isFury) this.mario.frame = 11;
             else  this.mario.frame = 18;
         }
@@ -277,7 +277,7 @@ class Mario{
                 }, ball,amb);
                 game.physics.arcade.enable(ball);
                 ball.body.bounce.setTo(1,1);
-                ball.body.setSize(16,16);
+                ball.body.setSize(16,16,0,0);
                 ball.anchor.setTo(0, 1);
             }
             ball.scale.setTo(direction, 1);
@@ -347,7 +347,7 @@ class Mario{
                 game.time.events.add(time, function () {
                     if(!this.touchingdown()){
                         this.fermo = false;
-                        this.mario.body.setSize(32,64);
+                        this.mario.body.setSize(32,64,0,0);
                         this.mario.frame = 13;
                     }
                     stop.resumegame();
@@ -374,7 +374,7 @@ class Mario{
                         game.time.events.add(time, function () {
                             this.isBigger = false;
                             this.isFury = false;
-                            this.mario.body.setSize(26,32);
+                            this.mario.body.setSize(26,32,0,0);
                             stop.resumegame();
                             if(enemy.position.x+16>this.mario.position.x && enemy.direction > 0) {enemy.direction = -1;}
                             else if(enemy.position.x<this.mario.position.x && enemy.direction < 0){enemy.direction = 1;}

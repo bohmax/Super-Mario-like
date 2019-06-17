@@ -253,17 +253,19 @@ var editorState = {
     drawHelp: function(){
         var grafica = game.add.graphics(0, 0);
         var rect = this.drawRectangle(grafica, 10, 10, game.camera.width-20,game.camera.height-20, 3, 0x000000, 1, 0x4c78e8, 0.5,7);
-
-        text = game.add.text(rect.width / 2, rect.height / 2, "Selezionare un oggetto e trascinalo\no cliccarlo nell'\napposita quadratino,ricordantosi\nche sarà tutto inserito a partire dall'angolo più in alto a sinistra", game.global.style);
+        
+        text = game.add.text(rect.width / 2, rect.height / 2, "Supporto al drag&drop, selezione singola e multipla\n singola: click sulla sprite, multipla: doppio click\n E' consentita la selezione multipla solo se la sprite \ne' composta da un solo quadrato\n Per la selezione singola si possono anche usare \nsprite piu' grandi come quelle dello sfondo\n  Per poter giocare e' necessario \nfare drag&drop su cisternino e gervasin.\n   Le sprite saranno inserite a partite dal riquadro giallo \nche apparirà quando si passa la sprite nella tabella\n Non sono presenti tutti gli oggetti \ndel livello sotteraneo.\n Nel riquadro speciali, la prima riga serve per far \napparire gli oggetti coi riquadri interrogativi \nmentre nelle altre due righe gli oggetti appaiono come\n mattoni gli oggetti sfondo sono inseparabili e' \nsconsigliato sovrapporli perche' potrebbero non \napparire nello stesso modo quando si gioco.", { font: 'fontmario', fill: '#ffffff', align: "center" });
         text.anchor.set(0.5);
-        text.fontSize = 13;
+        text.fontSize = 8;
+        text.strokeThickness = 3;
         grafica.bottone = grafica.addChild(this.drawButton(rect.x + (game.camera.width-20)/2-60,(game.camera.height-20-30),'INDIETRO',this.indietro));
         grafica.alpha = 0;
         grafica.bottone.input.enabled = false;
-
+        
         grafica.addChild(rect);
         grafica.addChild(text);
-
+        grafica.addChild(grafica.bottone);
+        
         return grafica;
     },
 
@@ -629,7 +631,6 @@ var editorState = {
                     case 0: //money
                         var coin = 1;
                         var gid = 1;
-                        console.log(sprite.position)
                         if(sprite.starty > this.moneyposy){
                             if(sprite.children.length>0)
                                 coin = 12;
@@ -779,7 +780,6 @@ var editorState = {
         else
             this.matrix[y][x][0] = undefined;
 
-        console.log(sprite.children.length);
         var i = 0,lunghezza = sprite.children.length;
         while(i<lunghezza) { //cicla in base al numero originale di figli
             if(destroy){

@@ -1,22 +1,28 @@
 var playState = {
 
     init: function(map,backcolor,memory,afterscenechange,x,y) {
-        console.log(map)
         this.mapname = map;
         if(backcolor!=undefined)
             this.backcolor = backcolor;
         else this.backcolor = '#3498db';
         if(afterscenechange != undefined){ //variabile che mi indica se devo solo spostare mario
+            this.mario.body.velocity.x = 0;
+            this.mario.body.velocity.y = 0;
             this.map.map.destroy();
             this.map.layer.destroy();
             if(afterscenechange)
                 this.moveoncreate = true;
             else this.moveoncreate = false;
-            this.postox = x;
-            this.postoy = y;
+            this.transfer.destroy();
+            this.coin.destroy();
+            this.blocco1.destroy();
+            this.mario.position.x = x;
+            this.mario.position.y = y;
             this.specialblock.setAll('alpha', 1);
         } 
         else if(memory != undefined){ //variabile che mi indica se devo inizializzare tutto
+            this.mario.body.velocity.x = 0;
+            this.mario.body.velocity.y = 0;
             this.memory = true;
             this.map.map.destroy();
             this.map.layer.destroy();
@@ -29,6 +35,8 @@ var playState = {
 
         //array che contiene il punto di spwan dei nemici
         this.map = new Map(this.mapname);
+        //game.physics.arcade.forceX = true;
+        game.physics.arcade.OVERLAP_BIAS = 12;
         if(!this.memory){
             this.labels = new Label();
             this.labels.draw();
@@ -92,7 +100,6 @@ var playState = {
 
             game.world.sendToBack(this.temporaneo);
             game.world.bringToTop(this.special);
-            game.world.bringToTop(this.mario);
 
             this.map.map.createFromObjects('Special', 1, 'animazione', 0, true, false, this.specialblock);
             this.map.map.createFromObjects('block', 5, 'animazione', 8, true, false, this.block);
@@ -147,6 +154,7 @@ var playState = {
 
             // Start the timer
             this.countDown.start();
+            this.stop = false;
 
             //imposto i muri per distruggere gli oggetti bonus
             var left = game.add.sprite(-64, game.height,null,0,this.extraobject);
@@ -187,7 +195,7 @@ var playState = {
             this.sounds.addMarker('timeout', 48.717, 2.823,volumesound);
             this.sounds.addMarker('starpower', 48.717, 2.823,volumesound);
 
-            this.musica.addMarker('musica', 16.682, 28.739,volumesound,true);
+            this.musica.addMarker('musica', 16.682, 28.739,this.volumemusic,true);
             this.musica.addMarker('musica_power_up', 14.607, 0.924,volumesound,false);
             this.musica.addMarker('musica_underground', 51.540, 13.997);
             this.musica.addMarker('musica_invincibile', 65.537, 9.491,volumesound,false);
@@ -198,7 +206,7 @@ var playState = {
         else if(this.moveoncreate == undefined){
             var mariocopy = this.map.map.objects.endgame;
             //game.world.add(this.mario);
-            this.mario.position.x = mariocopy[0].x;
+            this.mario.position.x = mariocopy[0].x+32;
             this.mario.position.y = mariocopy[0].y+32;
             var monete = this.map.map.objects.coin;
             this.blocco1 = game.add.group();
@@ -208,38 +216,63 @@ var playState = {
             var transfer = this.map.map.objects.transfer;
             this.map.map.createFromObjects('coin', 51, 'animazione', 0, true, false, this.coin);
             this.map.map.createFromObjects('blocco', 12, 'animazione', 39, true, false, this.blocco1);
-            this.coin.callAll('animations.add', 'animations', 'flip', [0, 1, 2, 3], 20, true);
-            this.blocco1.setAll('body.immovable', true);
+            this.coin.callAll('animations.add', 'animations', 'flip', [0, 1, 2, 3], 39, true);
+            this.blocco1.forEach(function(item){
+                game.physics.arcade.enable(item);
+                item.body.immovable = true;
+                //item.body.allowGravity = false;
+            });
             this.specialblock.setAll('alpha', 0);
             transfer.forEach(function(item){
                 var sprite = game.add.sprite(item.x,item.y-32,'animazione',38);
-                sprite.PosX = item.posX;
-                sprite.PosY = item.posY;
+                sprite.PosX = item.properties.PosX+48;
+                sprite.PosY = item.properties.PosY-32;
                 this.transfer.add(sprite);
                 game.physics.arcade.enable(sprite);
                 sprite.body.immovable = true;
-                sprite.body.moves = false;
+                sprite.body.setSize(32,64);
+                this.check = sprite;
             },this);
-        } else {
-            var mariocopy = this.map.map.objects.endgame;
-            //game.world.add(this.mario);
-            this.mario.position.x = this.postox;
-            this.mario.position.y = this.postoy;
+            
+            var cont = game.time.create(false);
+            this.countDown.start();
+            cont.add(Phaser.Timer.SECOND * this.countDown.duration / Phaser.Timer.SECOND, this.timeout, this);
+            var temp = this.countDown;
+            this.countDown = cont;
+            this.countDown.start();
+            temp.destroy();
+        } 
+        else {
+            var cont = game.time.create(false);
+            this.countDown.start();
+            console.log(this.duration)
+            cont.add(Phaser.Timer.SECOND * this.countDown.duration / Phaser.Timer.SECOND, this.timeout, this);
+            var temp = this.countDown;
+            this.countDown = cont;
+            this.countDown.start();
+            temp.destroy();
+            for (var i = 0;i<this.enemypoint.length;i++){
+               if(this.enemypoint[i].x<this.mario.position.x){
+                   this.enemypoint.splice(i,1);
+                i--;
+               }
+            };
         }
-
+        game.world.sendToBack(this.map.map);
+        game.world.sendToBack(this.map.layer);
+        game.world.bringToTop(this.mario);
     },
 
     /*render: function() {
         //game.debug.text(game.time.fps, 2, 14, "#00ff00");
         //game.debug.soundInfo(this.sounds);
-        //game.debug.body(this.mario);
+        game.debug.body(this.mario);
         game.debug.body(this.queen);
-
         //this.enemy.forEach(function(item) {
         //    game.debug.body(item);
         //});
-
-        this.transfer.forEach(function(item) {
+        if(this.block!=undefined)
+        this.block.forEach(function(item) {
             game.debug.body(item);
         });
     },*/
@@ -290,17 +323,25 @@ var playState = {
         //--------------------------------------------
 
         //------------collisioni mario---------
-        game.physics.arcade.collide(this.mario, this.specialblock, this.onSpecialCollide,null,this);
-        game.physics.arcade.collide(this.mario, this.block, this.onSpecialCollide,null,this);
-        game.physics.arcade.collide(this.mario, this.discoveredblock);
+        game.physics.arcade.collide(this.mario, this.specialblock, this.onSpecialCollide,this.preventMarioCollision,this);
+        game.physics.arcade.collide(this.mario, this.block, this.onSpecialCollide,this.preventMarioCollision,this);
+        game.physics.arcade.collide(this.mario, this.discoveredblock,null,this.preventMarioCollision,this);
         game.physics.arcade.collide(this.mario, this.map.layer);
-        game.physics.arcade.collide(this.mario, this.toTween);
+        game.physics.arcade.collide(this.mario, this.toTween,null,this.preventMarioCollision,this);
         if(!this.hit){game.physics.arcade.collide(this.mario, this.enemy,this.onEnemyCollision,null,this);}
         game.physics.arcade.overlap(this.mario, this.queen,this.endgame,null,this);
         game.physics.arcade.overlap(this.todelete, this.extraobject, 
                                     function(r,s){console.log('delete from world');r.parent.remove(r);this.ricicla.add(r);r.kill();},null,this);
         if(this.memory){//se mi trovo nel livello sotteraneo
-            game.physics.arcade.collide(this.mario, this.blocco1);
+            game.physics.arcade.collide(this.mario, this.blocco1,null,this.preventMarioCollision,this);
+            game.physics.arcade.collide(this.mario, this.transfer,function(mario,altro){
+                if(this.cursor.right.isDown && this.mario.body.touching.right){
+                    console.log(altro.PosX)
+                    var x = altro.PosX;
+                    var y = altro.PosY;
+                    game.state.start('play', false, false, 'map','#3498db',false,true,x,y);
+                }
+            },null,this); 
             game.physics.arcade.overlap(this.mario, this.coin,function(mario,coin){
                 mario.body.touching.up=false;
                 this.sounds.play('monetina');
@@ -308,24 +349,19 @@ var playState = {
                 coin.kill();
                 this.ricicla.add(coin);
             },null,this);
-            game.physics.arcade.collide(this.mario, this.transfer,function(mario,altro){
-                if(this.cursor.right.isDown){
-                    var x = altro.PosX;
-                    var y = altro.PosY;
-                    game.state.start('play', false, false, 'map','#3498db',false,true,x,y);
-            }
-            },null,this); 
         } else {
             game.physics.arcade.collide(this.mario, this.transfer,function(mario,altro){
-            if(mario.position.x-32>altro.position.x+16 && mario.position.x-32 < altro.position.x+38){
-                if(this.cursor.down.isDown){
-                    game.state.start('play', false, false, 'underworld','#000000',true);
+                if(mario.position.x-32>altro.position.x+8 && mario.position.x-32 < altro.position.x+38){
+                    if(this.cursor.down.isDown){
+                        this.sounds.play('life');
+                        this.mario.position.y = 64;
+                        game.state.start('play', false, false, 'underworld','#000000',true);
+                    }
                 }
-            }
             },null,this);                       
         }
         //--------------------------------------------
-
+        //console.log(this.stop);
         if(!this.stop){
             this.movePlayer();
             if(this.enemypoint.length>0)
@@ -446,6 +482,7 @@ var playState = {
                         } else {goomba.animations.play('walk'); goomba.body.moves = true;goomba.body.immovable = false;}
                         this.enemy.add(goomba);
                         goomba.body.velocity.x = -60;
+                        goomba.body.setSize(32,28,0,4);
                     } 
                     else{ //tartuga
                         goomba = this.createobject(this.enemypoint[consecutive].x,originaly-64,6,22);
@@ -460,7 +497,7 @@ var playState = {
                         goomba.isDead = false;
                         goomba.animations.play('walk');
                         this.enemy.add(goomba);
-                        goomba.body.setSize(32,48,0,16);
+                        goomba.body.setSize(32,44,0,20);
                         goomba.body.velocity.x = -45;
                     }
                     goomba.scale.setTo(1,1);
@@ -816,7 +853,7 @@ var playState = {
                                 enemy.body.velocity.x = -enemy.myvelocity;
                             else enemy.body.velocity.x = enemy.myvelocity;
                             enemy.position.y -= 28;
-                            enemy.body.setSize(32,48,0,16);
+                            enemy.body.setSize(32,44,0,20);
                         }
                     },this);
                 } else{
@@ -905,6 +942,19 @@ var playState = {
         }
     },
 
+    preventMarioCollision: function(mario, blocco){
+        if(mario.frame ===4 || mario.frame ===11 || mario.frame ===18){
+            var pos = blocco.position.x;
+            var diff = mario.position.x-(pos+blocco.width);
+            diff = Math.abs(diff);
+            if(diff>=26) {
+                mario.body.velocity.x = 0;
+                return false;
+            }
+            else{return true;}
+        } else return true;
+    },
+    
     itemCollision: function(special, blocco){
         if(!(special.parent == this.enemy)){
             if(!special.isStella){
