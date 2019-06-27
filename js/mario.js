@@ -95,6 +95,7 @@ class Mario{
             }
         } 
         else if(this.mario.play){
+            this.mario.body.velocity.y += 200;
             this.mario.animations.stop();
             this.mario.play = false;
             if(!this.isBigger){this.mario.frame = 2;} 
@@ -142,6 +143,8 @@ class Mario{
                 }
             }
         } else if(this.mario.play){
+            console.log('ekfje')
+            this.mario.body.velocity.y += 200;
             this.mario.animations.stop();
             this.mario.play = false;
             if(!this.isBigger){this.mario.frame = 2;} 
@@ -171,7 +174,7 @@ class Mario{
                     this.mario.body.velocity.y = 0;
                     this.mario.isjumping = true;
                 }
-            }
+            } else {this.mario.body.velocity.y += 10;}
         }
         else{
             return true;

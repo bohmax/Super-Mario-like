@@ -6,6 +6,7 @@ var playState = {
             this.backcolor = backcolor;
         else this.backcolor = '#3498db';
         if(afterscenechange != undefined){ //variabile che mi indica se devo solo spostare mario
+            //dopo il livello sotteraneo
             this.mario.body.velocity.x = 0;
             this.mario.body.velocity.y = 0;
             this.map.map.destroy();
@@ -19,14 +20,16 @@ var playState = {
             this.mario.position.x = x;
             this.mario.position.y = y;
             this.specialblock.setAll('alpha', 1);
+            this.discoveredblock.setAll('alpha', 1);
         } 
         else if(memory != undefined){ //variabile che mi indica se devo inizializzare tutto
+            //livello sotteraneo
             this.mario.body.velocity.x = 0;
             this.mario.body.velocity.y = 0;
             this.memory = true;
             this.map.map.destroy();
             this.map.layer.destroy();
-        } else this.memory = false;
+        } else this.memory = false; //iniziale
     },
 
     create: function() {
@@ -137,6 +140,7 @@ var playState = {
                     blocco.body.checkCollision.up = false;
                     blocco.body.checkCollision.left = false;
                     blocco.body.checkCollision.right = false;
+                    blocco.body.checkCollision.down = true;
                 }
             }, this)
 
@@ -204,16 +208,16 @@ var playState = {
             game.time.advancedTiming = true;
         } 
         else if(this.moveoncreate == undefined){
-            var mariocopy = this.map.map.objects.endgame;
+            var mariocopy = [...this.map.map.objects.endgame];
             //game.world.add(this.mario);
             this.mario.position.x = mariocopy[0].x+32;
             this.mario.position.y = mariocopy[0].y+32;
-            var monete = this.map.map.objects.coin;
+            var monete = [...this.map.map.objects.coin];
             this.blocco1 = game.add.group();
             this.coin = game.add.group();
             this.blocco1.enableBody = true;
             this.coin.enableBody = true;
-            var transfer = this.map.map.objects.transfer;
+            var transfer = [...this.map.map.objects.transfer];
             this.map.map.createFromObjects('coin', 51, 'animazione', 0, true, false, this.coin);
             this.map.map.createFromObjects('blocco', 12, 'animazione', 39, true, false, this.blocco1);
             this.coin.callAll('animations.add', 'animations', 'flip', [0, 1, 2, 3], 39, true);
@@ -223,6 +227,7 @@ var playState = {
                 //item.body.allowGravity = false;
             });
             this.specialblock.setAll('alpha', 0);
+            this.discoveredblock.setAll('alpha', 0);
             transfer.forEach(function(item){
                 var sprite = game.add.sprite(item.x,item.y-32,'animazione',38);
                 sprite.PosX = item.properties.PosX+48;
@@ -245,7 +250,6 @@ var playState = {
         else {
             var cont = game.time.create(false);
             this.countDown.start();
-            console.log(this.duration)
             cont.add(Phaser.Timer.SECOND * this.countDown.duration / Phaser.Timer.SECOND, this.timeout, this);
             var temp = this.countDown;
             this.countDown = cont;
@@ -346,6 +350,8 @@ var playState = {
                 mario.body.touching.up=false;
                 this.sounds.play('monetina');
                 this.pointtext(coin.position.x,coin.position.y,200);
+                game.global.collectedcoin++;
+                this.labels.updatecollected(game.global.collectedcoin);
                 coin.kill();
                 this.ricicla.add(coin);
             },null,this);
@@ -450,7 +456,9 @@ var playState = {
         this.temporaneo.destroy();
         this.todelete.destroy();
         this.toTween.destroy();        
-        this.getqueen.destroy();        
+        this.getqueen.destroy();
+        this.memory = undefined
+        this.moveoncreate = undefined
         if(this.finito){
             this.finito = false;
             game.state.start('menu');   
@@ -943,11 +951,11 @@ var playState = {
     },
 
     preventMarioCollision: function(mario, blocco){
-        if(mario.frame ===4 || mario.frame ===11 || mario.frame ===18){
+        if(mario.frame ===4 || mario.frame ===11){
             var pos = blocco.position.x;
             var diff = mario.position.x-(pos+blocco.width);
             diff = Math.abs(diff);
-            if(diff>=26) {
+            if(diff>=26 && !blocco.vita) {
                 mario.body.velocity.x = 0;
                 return false;
             }
